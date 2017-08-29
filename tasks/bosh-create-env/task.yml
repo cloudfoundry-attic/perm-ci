@@ -1,0 +1,27 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source: bosh/cli
+
+inputs:
+- name: perm-ci
+- name: bosh-deployment
+- name: state-dir
+
+outputs:
+- name: updated-state-dir
+
+run:
+  path: perm-ci/tasks/bosh-create-env/task.sh
+
+params:
+  GCP_ZONE:
+  GCP_REGION:
+  GCP_SERVICE_ACCOUNT_KEY_FILE:
+  GCP_PROJECT_ID:
+  ENV_NAME:
+  VARS_STORE_FILE:
+  ENV_STATE_FILE:
+  OPS_FILES:

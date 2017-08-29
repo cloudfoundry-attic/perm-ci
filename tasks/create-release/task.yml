@@ -1,0 +1,16 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: bosh/cli
+
+inputs:
+- name: perm-ci
+- name: release
+
+outputs:
+- name: release-output
+
+run: perm-ci/tasks/test-server/task.sh
