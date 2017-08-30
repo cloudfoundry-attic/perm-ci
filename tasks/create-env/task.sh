@@ -28,8 +28,8 @@ function verify_variables() {
     exit 1
   fi
 
-  if [[ ! -f "${STATE_DIR}/${GCP_SERVICE_ACCOUNT_KEY_FILE}" ]]; then
-    echo "\$GCP_SERVICE_ACCOUNT_KEY_FILE does not exist at path ${STATE_DIR}/${GCP_SERVICE_ACCOUNT_KEY_FILE}"
+  if [[ ! -f "${STATE_DIR}/${GCP_SERVICE_ACCOUNT_KEY_FILE}.enc" ]]; then
+    echo "Encrypted \$GCP_SERVICE_ACCOUNT_KEY_FILE does not exist at path ${STATE_DIR}/${GCP_SERVICE_ACCOUNT_KEY_FILE}.enc"
     exit 1
   fi
 
