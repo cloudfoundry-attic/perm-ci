@@ -10,19 +10,19 @@ resources:
 - name: perm-ci
   type: git
   source:
-    uri: git@github.com/pivotal-cf/perm-ci
+    uri: git@github.com:pivotal-cf/perm-ci
     branch: master
     private_key: ((github_bot_private_key))
 - name: perm-repo
   type: git
   source:
-    uri: git@github.com/pivotal-cf/perm-release
+    uri: git@github.com:pivotal-cf/perm-release
     branch: master
     private_key: ((github_bot_private_key))
 - name: perm-server
   type: git
   source:
-    uri: git@github.com/pivotal-cf/perm-release
+    uri: git@github.com:pivotal-cf/perm-release
     branch: master
     private_key: ((github_bot_private_key))
     paths:
@@ -30,7 +30,7 @@ resources:
 - name: perm-release
   type: git
   source:
-    uri: git@github.com/pivotal-cf/perm-release
+    uri: git@github.com:pivotal-cf/perm-release
     branch: master
     private_key: ((github_bot_private_key))
     ignore_paths:
