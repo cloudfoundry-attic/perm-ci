@@ -27,6 +27,7 @@ function update_pipeline() {
   local pipeline
   local config_file
   local cryptdo_password
+
   pipeline="$1"
   config_file="$(dirname -- "$0")/../pipelines/${pipeline}.yml"
   cryptdo_password="$(lpass show "$CRYPTDO_PASSWORD_NAME" --password)"

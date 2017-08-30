@@ -3,7 +3,7 @@ platform: linux
 
 image_resource:
   type: docker-image
-  source: bosh/cli
+  source: cfperm/bbl-cryptdo
 
 inputs:
 - name: perm-ci

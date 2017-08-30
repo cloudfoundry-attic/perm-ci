@@ -1,0 +1,73 @@
+resources:
+- name: bbl-cryptdo-image-src
+  type: git
+  source:
+    uri: git@github.com:pivotal-cf/perm-ci
+    branch: master
+    paths:
+    - images/bbl-cryptdo/*
+
+- name: bbl-cryptdo-image
+  type: docker-image
+  source:
+    repository: cfperm/bbl-cryptdo
+    username: ((dockerhub_username))
+    password: ((dockerhub_password))
+
+- name: bbl-version
+  type: github-release
+  source:
+    owner: cloudfoundry
+    repository: bosh-bootloader
+    access_token: ((github_access_token))
+
+- name: bosh-cli-version
+  type: github-release
+  source:
+    owner: cloudfoundry
+    repository: bosh-cli
+    access_token: ((github_access_token))
+
+- name: cryptdo-version
+  type: github-release
+  source:
+    owner: xoebus
+    repository: cryptdo
+    access_token: ((github_access_token))
+
+jobs:
+- name: build-bbl-cryptdo-image
+  plan:
+  - aggregate:
+    - get: bbl-cryptdo-image-src
+      trigger: true
+    - get: bbl-version
+      trigger: true
+    - get: bosh-cli-version
+      trigger: true
+    - get: cryptdo-version
+      trigger: true
+  - task: write-build-args-json
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: alpine
+      outputs:
+      - name: build-args-dir
+      run:
+        path: sh
+        args:
+        - BOSH_CLI_VESION="$(cat bosh-cli-version/tag | sed -e "s/v//")"
+        - BBL_VESION="$(cat bbl-version/tag | sed -e "s/v//")"
+        - CRYPTDO_VESION="$(cat cryptdo-version/tag | sed -e "s/v//")"
+        - -c
+        - |
+          mkdir -p build-args-dir &&
+          echo "{\"BBL_VERSION\":\"${BBL_VERSION}\",\"BOSH_CLI_VERSION\":\"${BOSH_CLI_VERSION}\",\"CRYPTDO_VERSION\":\"{CRYPTDO_VERSION}\"}" >
+          build-args-dir/build-args.json
+  - put: bbl-cryptdo-image
+    params:
+      build: bbl-cryptdo-image-src/images/bbl-cryptdo
+      build_args_file: build-args-dir/build-args.json

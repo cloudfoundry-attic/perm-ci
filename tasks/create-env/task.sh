@@ -105,6 +105,22 @@ function create_env() {
   popd
 }
 
+function encrypt_and_commit() {
+  local file
+  local git_status
+
+  file="$1"
+
+  cryptdo-bootstrap -p "$CRYPTDO_PASSWORD" "$file"
+  chmod +w "$file"
+  git_status="$(git status --porcelain)"
+
+  if echo "$git_status" | grep -q "${file}.enc"; then
+    git add "${file}.enc"
+    git commit -m "Update ${file}"
+  fi
+}
+
 function commit_saved_state() {
   local git_status
 
@@ -112,22 +128,9 @@ function commit_saved_state() {
     git config user.name "${GIT_COMMIT_USERNAME:-"CI Bot"}"
     git config user.email "${GIT_COMMIT_EMAIL:-"cf-permission@pivotal.io"}"
 
-    git_status="$(git status --porcelain)"
-
-    if echo "$git_status" | grep -q "$BBL_STATE_FILE_NAME"; then
-      git add "$BBL_STATE_FILE_NAME*"
-      git commit -m "Update ${BBL_STATE_FILE_NAME}"
-    fi
-
-    if echo "$git_status" | grep -q "$VARS_STORE_FILE"; then
-      git add "$VARS_STORE_FILE*"
-      git commit -m "Update ${VARS_STORE_FILE}"
-    fi
-
-    if echo "$git_status" | grep -q "$ENV_STATE_FILE"; then
-      git add "$ENV_STATE_FILE*"
-      git commit -m "Update ${ENV_STATE_FILE}"
-    fi
+    encrypt_and_commit "$BBL_STATE_FILE_NAME"
+    encrypt_and_commit "$VARS_STORE_FILE"
+    encrypt_and_commit "$ENV_STATE_FILE"
   popd
 
   cp -R "$STATE_DIR" "${UPDATED_STATE_DIR}"
