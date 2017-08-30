@@ -16,7 +16,7 @@ outputs:
 - name: updated-state-dir
 
 run:
-  path: perm-ci/tasks/bosh-create-env/task.sh
+  path: perm-ci/tasks/create-env/task.sh
 
 params:
   GCP_ZONE:

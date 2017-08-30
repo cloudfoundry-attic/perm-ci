@@ -38,7 +38,7 @@ jobs:
     - get: perm-ci
     - get: ci-env-state
   - task: deploy-director
-    file: perm-ci/tasks/bosh-create-env/task.sh
+    file: perm-ci/tasks/create-env/task.sh
     input_mapping:
       perm-ci: perm-ci
       bosh-deployment: bosh-deployment
