@@ -1,4 +1,4 @@
-FROM alpine
+FROM ubuntu:xenial
 
 ARG BOSH_CLI_VERSION
 ARG BBL_VERSION
@@ -6,27 +6,28 @@ ARG CRYPTDO_VERSION
 
 RUN \
   test -n "$BOSH_CLI_VERSION" && \
-  echo "$BOSH_CLI_VERSION" | echo -vq v && \
+  echo "$BOSH_CLI_VERSION" | grep -vq v && \
   test -n "$BBL_VERSION" && \
-  echo "$BBL_VERSION" | echo -vq v && \
+  echo "$BBL_VERSION" | grep -q v && \
   test -n "$CRYPTDO_VERSION" && \
-  echo "$CRYPTDOL_VERSION" | echo -vq v
+  echo "$CRYPTDO_VERSION" | grep -vq v
 
 RUN \
-  echo "@edge http://nl.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
-  apk update && \
-  apk add --no-cache \
-    bash \
+  apt-get update -qq && \
+  apt-get install -yqq --no-install-recommends \
+    software-properties-common && \
+  add-apt-repository ppa:git-core/ppa && \
+  apt-get install -yqq --no-install-recommends \
+    ca-certificates \
     curl \
-    git@edge \
-    gzip \
-    outils-signify \
-    tar
+    git \
+    signify-openbsd && \
+  rm -rf /var/lib/apt/lists/*
 
 RUN \
   cd /tmp && \
   curl -fSL \
-    "https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-${BOSH_CLI_VERSION//v/}-linux-amd64" \
+    "https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-${BOSH_CLI_VERSION}-linux-amd64" \
     -o /usr/local/bin/bosh && \
   chmod 755 /usr/local/bin/bosh && \
   rm -rf /tmp/*
@@ -45,13 +46,13 @@ RUN \
     "https://xoeb.us/keys/cryptdo.pub" \
     -o cryptdo.pub && \
   curl -fSL \
-    "https://github.com/xoebus/cryptdo/releases/download/1.0.0/cryptdo-linux-${CRYPTDO_VERSION//v/}.tgz" \
-    -o "cryptdo-linux-${CRYPTDO_VERSION//v/}.tgz" && \
+    "https://github.com/xoebus/cryptdo/releases/download/1.0.0/cryptdo-linux-${CRYPTDO_VERSION}.tgz" \
+    -o "cryptdo-linux-${CRYPTDO_VERSION}.tgz" && \
   curl -fSL \
-    "https://github.com/xoebus/cryptdo/releases/download/1.0.0/cryptdo-linux-${CRYPTDO_VERSION//v/}.tgz.sha256.sig" \
+    "https://github.com/xoebus/cryptdo/releases/download/1.0.0/cryptdo-linux-${CRYPTDO_VERSION}.tgz.sha256.sig" \
     -o cryptdo-sha256.sig && \
-  signify -C -p cryptdo.pub -x cryptdo-sha256.sig && \
-  mv "cryptdo-linux-${CRYPTDO_VERSION//v/}.tgz" cryptdo.tgz && \
+  signify-openbsd -C -p cryptdo.pub -x cryptdo-sha256.sig && \
+  mv "cryptdo-linux-${CRYPTDO_VERSION}.tgz" cryptdo.tgz && \
   tar -xf cryptdo.tgz -C /usr/local/bin && \
   chmod 755 /usr/local/bin/cryptdo* && \
   rm -rf /tmp/*
