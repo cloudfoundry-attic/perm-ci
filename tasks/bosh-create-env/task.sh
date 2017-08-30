@@ -3,11 +3,14 @@
 set -eux
 
 STATE_DIR="${PWD}/state-dir"
+ENV_STATE_DIR="${PWD}/env-state-dir"
 UPDATED_STATE_DIR="${PWD}/updated-state-dir"
 BOSH_DEPLOYMENT_DIR="${PWD}/bosh-deployment"
-OPS_FILES="${OPS_FILES:-}"
+ADDITIONAL_OPS_FILES_DIR="${PWD}/additional-ops-files-dir"
+BOSH_DEPLOYMENT_OPS_FILES="${BOSH_DEPLOYMENT_OPS_FILES:-}"
+ADDITIONAL_OPS_FILES="${ADDITIONAL_OPS_FILES:-}"
 OPS_FILE="${PWD}/concatenated_ops_file.yml"
-BBL_STATE_FILE="bbl-state.json"
+BBL_STATE_FILE_NAME="bbl-state.json"
 
 function verify_variables() {
   if [[ -z "$GCP_ZONE" ]]; then
@@ -58,24 +61,37 @@ function setup_infrastructure() {
       --gcp-zone "$GCP_ZONE" \
       --gcp-region "$GCP_REGION" \
       --gcp-service-account-key "${STATE_DIR}/${GCP_SERVICE_ACCOUNT_KEY_FILE}" \
-      --gcp-project-id "${GCP_PROJECT_ID}" \
+      --gcp-project-id "$GCP_PROJECT_ID" \
+      --name "$ENV_NAME" \
       --no-director
   popd
 }
 
 function concatenate_ops_files() {
-  local ops_files
-  ops_files=( $OPS_FILES )
+  local bosh_deployment_ops_files
+  local additional_ops_files
 
-  for file in "${ops_files[@]}"; do
-    cat "${BOSH_DEPLOYMENT_DIR}/${file}" >> "${OPS_FILE}"
-  done
+  if [[ -n "$BOSH_DEPLOYMENT_OPS_FILES" ]]; then
+    bosh_deployment_ops_files=( $BOSH_DEPLOYMENT_OPS_FILES )
+
+    for file in "${bosh_deployment_ops_files[@]}"; do
+      echo "file: ${file}"
+      cat "${BOSH_DEPLOYMENT_DIR}/${file}" >> "${OPS_FILE}"
+    done
+  fi
+
+  if [[ -n "$ADDITIONAL_OPS_FILES" ]]; then
+    additional_ops_files=( $ADDITIONAL_OPS_FILES )
+    for file in "${additional_ops_files[@]}"; do
+      cat "${ADDITIONAL_OPS_FILES_DIR}/${file}" >> "${OPS_FILE}"
+    done
+  fi
 }
 
 function create_env() {
   pushd "$BOSH_DEPLOYMENT_DIR"
     bosh create-env \
-      --state "${STATE_DIR}/${ENV_STATE_FILE}" \
+      --state "${ENV_STATE_DIR}/${ENV_STATE_FILE}" \
       -o "${OPS_FILE}" \
       --vars-store "${STATE_DIR}/${VARS_STORE_FILE}" \
       -l <(bbl bosh-deployment-vars --state-dir "${STATE_DIR}") \
@@ -92,11 +108,13 @@ function commit_saved_state() {
 
     git_status="$(git status --porcelain)"
 
-    if echo "${git_status}" | grep -q "${BBL_STATE_FILE}"; then
-      git commit -m "Update bbl-state.json"
+    if echo "${git_status}" | grep -q "${BBL_STATE_FILE_NAME}"; then
+      git add "$BBL_STATE_FILE"
+      git commit -m "Update ${BBL_STATE_FILE_NAME}"
     fi
 
     if echo "${git_status}" | grep -q "${VARS_STORE_FILE}"; then
+      git add "$VARS_STORE_FILE"
       git commit -m "Update ${VARS_STORE_FILE}"
     fi
   popd
