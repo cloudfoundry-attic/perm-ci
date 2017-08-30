@@ -17,11 +17,6 @@ resources:
     uri: git@github.com:pivotal-cf/perm-ci-credentials
     branch: master
     private_key: ((github_bot_private_key))
-    paths:
-    - gcp-account-creds.json
-    - bbl-state.json
-    - director-vars-store.yml
-    - director-state.json
 - name: director-ops-files
   type: git
   source:
