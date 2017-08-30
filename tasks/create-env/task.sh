@@ -1,9 +1,9 @@
 #!/bin/bash
 
-set -eux
+set -eu
+set -o pipefail
 
 STATE_DIR="${PWD}/state-dir"
-ENV_STATE_DIR="${PWD}/env-state-dir"
 UPDATED_STATE_DIR="${PWD}/updated-state-dir"
 BOSH_DEPLOYMENT_DIR="${PWD}/bosh-deployment"
 ADDITIONAL_OPS_FILES_DIR="${PWD}/additional-ops-files-dir"
@@ -52,18 +52,24 @@ function verify_variables() {
     echo "\$ENV_STATE_FILE is a required parameter"
     exit 1
   fi
+
+  if [[ -z "$CRYPTDO_PASSWORD" ]]; then
+    echo "\$CRYPTDO_PASSWORD is a required parameter"
+    exit 1
+  fi
 }
 
 function setup_infrastructure() {
   pushd "$STATE_DIR"
-    bbl up \
-      --iaas gcp \
-      --gcp-zone "$GCP_ZONE" \
-      --gcp-region "$GCP_REGION" \
-      --gcp-service-account-key "${STATE_DIR}/${GCP_SERVICE_ACCOUNT_KEY_FILE}" \
-      --gcp-project-id "$GCP_PROJECT_ID" \
-      --name "$ENV_NAME" \
-      --no-director
+    cryptdo -passphrase "$CRYPTDO_PASSWORD" -- \
+      bbl up \
+        --iaas gcp \
+        --gcp-zone "$GCP_ZONE" \
+        --gcp-region "$GCP_REGION" \
+        --gcp-service-account-key "${STATE_DIR}/${GCP_SERVICE_ACCOUNT_KEY_FILE}" \
+        --gcp-project-id "$GCP_PROJECT_ID" \
+        --name "$ENV_NAME" \
+        --no-director
   popd
 }
 
@@ -89,13 +95,13 @@ function concatenate_ops_files() {
 }
 
 function create_env() {
-  pushd "$BOSH_DEPLOYMENT_DIR"
+  pushd "$STATE_DIR"
     bosh create-env \
-      --state "${ENV_STATE_DIR}/${ENV_STATE_FILE}" \
+      --state "${ENV_STATE_FILE}" \
       -o "${OPS_FILE}" \
-      --vars-store "${STATE_DIR}/${VARS_STORE_FILE}" \
-      -l <(bbl bosh-deployment-vars --state-dir "${STATE_DIR}") \
-      bosh.yml
+      --vars-store "${VARS_STORE_FILE}" \
+      -l <(bbl bosh-deployment-vars) \
+      "${BOSH_DEPLOYMENT_DIR}/bosh.yml"
   popd
 }
 
@@ -108,14 +114,19 @@ function commit_saved_state() {
 
     git_status="$(git status --porcelain)"
 
-    if echo "${git_status}" | grep -q "${BBL_STATE_FILE_NAME}"; then
-      git add "$BBL_STATE_FILE"
+    if echo "$git_status" | grep -q "$BBL_STATE_FILE_NAME"; then
+      git add "$BBL_STATE_FILE_NAME*"
       git commit -m "Update ${BBL_STATE_FILE_NAME}"
     fi
 
-    if echo "${git_status}" | grep -q "${VARS_STORE_FILE}"; then
-      git add "$VARS_STORE_FILE"
+    if echo "$git_status" | grep -q "$VARS_STORE_FILE"; then
+      git add "$VARS_STORE_FILE*"
       git commit -m "Update ${VARS_STORE_FILE}"
+    fi
+
+    if echo "$git_status" | grep -q "$ENV_STATE_FILE"; then
+      git add "$ENV_STATE_FILE*"
+      git commit -m "Update ${ENV_STATE_FILE}"
     fi
   popd
 

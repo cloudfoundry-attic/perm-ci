@@ -9,7 +9,6 @@ inputs:
 - name: perm-ci
 - name: bosh-deployment
 - name: state-dir
-- name: env-state-dir
 - name: additional-ops-files-dir
 
 outputs:
@@ -28,3 +27,4 @@ params:
   ENV_STATE_FILE:
   OPS_FILES:
   ADDITIONAL_OPS_FILES:
+  CRYPTDO_PASSWORD:

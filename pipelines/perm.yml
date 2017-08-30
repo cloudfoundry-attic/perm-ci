@@ -12,19 +12,19 @@ resources:
   source:
     uri: git@github.com/pivotal-cf/perm-ci
     branch: master
-    private_key: {{github_bot_private_key}}
+    private_key: ((github_bot_private_key))
 - name: perm-repo
   type: git
   source:
     uri: git@github.com/pivotal-cf/perm-release
     branch: master
-    private_key: {{github_bot_private_key}}
+    private_key: ((github_bot_private_key))
 - name: perm-server
   type: git
   source:
     uri: git@github.com/pivotal-cf/perm-release
     branch: master
-    private_key: {{github_bot_private_key}}
+    private_key: ((github_bot_private_key))
     paths:
     - src/**/*
 - name: perm-release
@@ -32,7 +32,7 @@ resources:
   source:
     uri: git@github.com/pivotal-cf/perm-release
     branch: master
-    private_key: {{github_bot_private_key}}
+    private_key: ((github_bot_private_key))
     ignore_paths:
     - src/**/*
 - name: version
@@ -40,8 +40,8 @@ resources:
   source:
     bucket: perm-releases
     key: current-version
-    access_key_id: {{perm_releases_bucket_access_key}}
-    secret_access_key: {{perm_releases_bucket_secret_key}}
+    access_key_id: ((perm_releases_bucket_access_key))
+    secret_access_key: ((perm_releases_bucket_secret_key))
 
 jobs:
 - name: test-server
