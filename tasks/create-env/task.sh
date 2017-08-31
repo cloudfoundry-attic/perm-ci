@@ -61,7 +61,7 @@ function verify_variables() {
 
 function setup_infrastructure() {
   pushd "$STATE_DIR"
-    cryptdo -passphrase "$CRYPTDO_PASSWORD" -- \
+    cryptdo --passphrase "$CRYPTDO_PASSWORD" -- \
       bbl up \
         --iaas gcp \
         --gcp-zone "$GCP_ZONE" \
@@ -81,13 +81,13 @@ function concatenate_ops_files() {
     bosh_deployment_ops_files=( $BOSH_DEPLOYMENT_OPS_FILES )
 
     for file in "${bosh_deployment_ops_files[@]}"; do
-      echo "file: ${file}"
       cat "${BOSH_DEPLOYMENT_DIR}/${file}" >> "${OPS_FILE}"
     done
   fi
 
   if [[ -n "$ADDITIONAL_OPS_FILES" ]]; then
     additional_ops_files=( $ADDITIONAL_OPS_FILES )
+
     for file in "${additional_ops_files[@]}"; do
       cat "${ADDITIONAL_OPS_FILES_DIR}/${file}" >> "${OPS_FILE}"
     done

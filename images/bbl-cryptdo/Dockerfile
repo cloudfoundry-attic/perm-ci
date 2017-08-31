@@ -27,6 +27,16 @@ RUN \
 RUN \
   cd /tmp && \
   curl -fSL \
+    "https://releases.hashicorp.com/terraform/0.10.3/terraform_0.10.3_linux_amd64.zip" \
+    -o terraform.zip && \
+  unzip terraform.zip && \
+  chmod 755 terraform && \
+  mv terraform /usr/local/bin && \
+  rm -rf /tmp/*
+
+RUN \
+  cd /tmp && \
+  curl -fSL \
     "https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-${BOSH_CLI_VERSION}-linux-amd64" \
     -o /usr/local/bin/bosh && \
   chmod 755 /usr/local/bin/bosh && \
