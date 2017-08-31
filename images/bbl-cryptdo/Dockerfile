@@ -15,15 +15,13 @@ RUN \
 RUN \
   apt-get update -qq && \
   apt-get install -yqq --no-install-recommends \
-    software-properties-common && \
-  add-apt-repository ppa:git-core/ppa && \
-  apt-get install -yqq --no-install-recommends \
     build-essential \
     ca-certificates \
     curl \
-    git \
+    ruby-full \
     signify-openbsd \
     unzip && \
+  apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
 RUN \
