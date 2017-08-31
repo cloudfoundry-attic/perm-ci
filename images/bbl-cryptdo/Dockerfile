@@ -21,7 +21,8 @@ RUN \
     ca-certificates \
     curl \
     git \
-    signify-openbsd && \
+    signify-openbsd \
+    unzip && \
   rm -rf /var/lib/apt/lists/*
 
 RUN \
