@@ -96,12 +96,13 @@ function concatenate_ops_files() {
 
 function create_env() {
   pushd "$STATE_DIR"
-    bosh create-env \
-      --state "${ENV_STATE_FILE}" \
-      -o "${OPS_FILE}" \
-      --vars-store "${VARS_STORE_FILE}" \
-      -l <(bbl bosh-deployment-vars) \
-      "${BOSH_DEPLOYMENT_DIR}/bosh.yml"
+    cryptdo --passphrase "$CRYPTDO_PASSWORD" -- \
+      bosh create-env \
+        --state "${ENV_STATE_FILE}" \
+        -o "${OPS_FILE}" \
+        --vars-store "${VARS_STORE_FILE}" \
+        -l <(cryptdo --passphrase "$CRYPTDO_PASSWORD" -- bbl bosh-deployment-vars) \
+        "${BOSH_DEPLOYMENT_DIR}/bosh.yml"
   popd
 }
 
