@@ -18,6 +18,7 @@ RUN \
     software-properties-common && \
   add-apt-repository ppa:git-core/ppa && \
   apt-get install -yqq --no-install-recommends \
+    build-essential \
     ca-certificates \
     curl \
     git \
