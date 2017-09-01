@@ -9,6 +9,7 @@ image_resource:
 inputs:
 - name: perm-ci
 - name: release
+- name: version
 
 outputs:
 - name: release-output
