@@ -19,4 +19,4 @@ pushd parent-repo
   fi
 popd
 
-cp -R parent-repo/* updated-parent-repo
+cp -R parent-repo updated-parent-repo
