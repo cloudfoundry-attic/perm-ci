@@ -16,3 +16,6 @@ outputs:
 
 run:
   path: perm-ci/tasks/create-release/task.sh
+
+params:
+  RELEASE_NAME:
