@@ -14,6 +14,7 @@ pushd parent-repo
   git config user.email "${GIT_COMMIT_EMAIL:-"cf-permissions@pivotal.io"}"
 
   if git diff-index HEAD; then
+    git add .
     git commit -m "Bumping ${SUBMODULE_NAME} submodule"
   fi
 popd
