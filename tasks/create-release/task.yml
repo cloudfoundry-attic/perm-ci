@@ -13,4 +13,5 @@ inputs:
 outputs:
 - name: release-output
 
-run: perm-ci/tasks/test-server/task.sh
+run:
+  path: perm-ci/tasks/test-server/task.sh
