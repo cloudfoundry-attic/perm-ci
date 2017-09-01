@@ -2,7 +2,7 @@
 
 set -eu
 
-SUBMODULE_SHA="$(cat submodule-repo/.git/ref)"
+SUBMODULE_SHA="$(cat submodule-repo/.git/HEAD)"
 
 pushd parent-repo
   pushd "$SUBMODULE_PATH"
