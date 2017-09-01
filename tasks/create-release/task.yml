@@ -14,4 +14,4 @@ outputs:
 - name: release-output
 
 run:
-  path: perm-ci/tasks/test-server/task.sh
+  path: perm-ci/tasks/create-release/task.sh
