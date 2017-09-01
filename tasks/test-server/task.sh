@@ -2,11 +2,11 @@
 
 set -eu
 
-export GOPATH="${PWD}/perm"
+export GOPATH="${PWD}/perm-release"
 export PATH="${GOPATH}/bin:${PATH}"
 
-go install github.com/onsi/ginkgo/ginkgo
-
 pushd "${GOPATH}/src/perm"
+  go install code.cloudfoundry.org/perm/vendor/github.com/onsi/ginkgo/ginkgo
+
   ginkgo -r -p -race -randomizeSuites -randomizeAllSpecs
 popd
