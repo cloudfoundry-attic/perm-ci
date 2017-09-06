@@ -2,9 +2,15 @@ groups:
 - name: develop
   jobs:
   - test-server
-  - test-release
-  - rc
-  - build-release-rc
+  - bump-submodule
+  - bump-rc
+  - create-release-rc
+
+resource_types:
+- name: gcs
+  type: docker-image
+  source:
+    repository: frodenas/gcs-resource
 
 resources:
 - name: perm-ci
@@ -12,101 +18,103 @@ resources:
   source:
     uri: git@github.com:pivotal-cf/perm-ci
     branch: master
-    private_key: ((github_bot_private_key))
-- name: perm-repo
+    private_key: ((github.private_key))
+- name: perm
   type: git
   source:
-    uri: git@github.com:pivotal-cf/perm-release
+    uri: git@github.com:pivotal-cf/perm
     branch: master
-    private_key: ((github_bot_private_key))
-- name: perm-server
-  type: git
-  source:
-    uri: git@github.com:pivotal-cf/perm-release
-    branch: master
-    private_key: ((github_bot_private_key))
-    paths:
-    - src/**/*
+    private_key: ((github.private_key))
 - name: perm-release
   type: git
   source:
     uri: git@github.com:pivotal-cf/perm-release
     branch: master
-    private_key: ((github_bot_private_key))
-    ignore_paths:
-    - src/**/*
+    private_key: ((github.private_key))
 - name: version
   type: semver
   source:
+    driver: s3
+    endpoint: storage.googleapis.com
+    initial_version: 0.0.0
     bucket: perm-releases
-    key: current-version
-    access_key_id: ((perm_releases_bucket_access_key))
-    secret_access_key: ((perm_releases_bucket_secret_key))
+    key: version
+    access_key_id: ((gcp.access_key_id))
+    secret_access_key: ((gcp.secret_access_key))
+- name: release-rc
+  type: gcs
+  source:
+    bucket: perm-release-candidates
+    regexp: perm-(.*).tgz
+    json_key: ((gcp.json_key))
 
 jobs:
 - name: test-server
   plan:
   - aggregate:
     - get: perm-ci
-    - get: perm-server
+    - get: perm
       trigger: true
-    - get: perm-repo
   - task: test-server
     file: perm-ci/tasks/test-server/task.yml
 
-- name: test-release
+- name: bump-submodule
   plan:
   - aggregate:
     - get: perm-ci
     - get: perm-release
+    - get: perm
+      passed:
+      - test-server
       trigger: true
-    - get: perm-repo
-  - task: test-release
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: alpine
-        run:
-          path: echo
-          args: "This is a placeholder"
+  - task: bump-submodule
+    file: perm-ci/tasks/bump-submodule/task.yml
+    input_mapping:
+      parent-repo: perm-release
+      submodule-repo: perm
+    output_mapping:
+      updated-parent-repo: updated-perm-release
+    params:
+      SUBMODULE_PATH: src/code.cloudfoundry.org/perm
+      SUBMODULE_NAME: perm
+  - put: perm-release
+    params:
+      repository: updated-perm-release/parent-repo
+      rebase: true
 
-- name: rc
+- name: bump-rc
   plan:
   - aggregate:
     - get: version
       params:
         pre: rc
-    - get: perm-server
+    - get: perm
       passed:
-      - test-server
-      trigger: true
+      - bump-submodule
     - get: perm-release
-      passed:
-      - test-release
       trigger: true
-    - get: perm-repo
-      passed:
-      - test-server
-      - test-release
   - put: version
     params:
       file: version/version
 
-- name: build-release-rc
+- name: create-release-rc
   plan:
   - aggregate:
     - get: version
-    - get: perm-ci
-    - get: perm-repo
       passed:
-      - rc
+      - bump-rc
       trigger: true
+    - get: perm-release
+      passed:
+      - bump-rc
+      trigger: true
+    - get: perm-ci
   - task: create-release
     file: perm-ci/tasks/create-release/task.yml
     input_mapping:
-      release: perm-repo
+      release: perm-release
+    params:
+      RELEASE_NAME: perm
   - put: release-rc
     params:
       file: release-output/perm-*.tgz
