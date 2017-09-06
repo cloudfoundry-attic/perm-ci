@@ -1,0 +1,16 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: ruby
+    tag: 2.3.4
+
+run:
+  path: perm-ci/tasks/test-ruby-client/tasks.sh
+  args: []
+
+inputs:
+- name: perm-bin-dir
+- name: perm-rb
+- name: perm-ci
