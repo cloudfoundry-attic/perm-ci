@@ -4,4 +4,4 @@ set -eu
 
 GOPATH="${PWD}/release"
 
-go build "$PACKAGE_PATH" -o "bin-dir/${BINARY_NAME}"
+go build -o "bin-dir/${BINARY_NAME}" "$PACKAGE_PATH"
