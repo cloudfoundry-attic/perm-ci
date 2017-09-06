@@ -55,18 +55,22 @@ jobs:
         type: docker-image
         source:
           repository: alpine
+      inputs:
+      - name: bbl-version
+      - name: bosh-cli-version
+      - name: cryptdo-version
       outputs:
       - name: build-args-dir
       run:
         path: sh
         args:
-        - BOSH_CLI_VESION="$(cat bosh-cli-version/tag | sed -e "s/v//")"
-        - BBL_VESION="$(cat bbl-version/tag | sed -e "s/v//")"
-        - CRYPTDO_VESION="$(cat cryptdo-version/tag | sed -e "s/v//")"
         - -c
         - |
-          mkdir -p build-args-dir &&
-          echo "{\"BBL_VERSION\":\"${BBL_VERSION}\",\"BOSH_CLI_VERSION\":\"${BOSH_CLI_VERSION}\",\"CRYPTDO_VERSION\":\"{CRYPTDO_VERSION}\"}" >
+          export BBL_VERSION="$(cat bbl-version/tag)" && \
+          export BOSH_CLI_VERSION="$(cat bosh-cli-version/tag | sed -e "s/v//")" && \
+          export CRYPTDO_VERSION="$(cat cryptdo-version/tag | sed -e "s/v//")" && \
+          mkdir -p build-args-dir && \
+          echo "{\"BBL_VERSION\":\"${BBL_VERSION}\",\"BOSH_CLI_VERSION\":\"${BOSH_CLI_VERSION}\",\"CRYPTDO_VERSION\":\"${CRYPTDO_VERSION}\"}" > \
           build-args-dir/build-args.json
   - put: bbl-cryptdo-image
     params:

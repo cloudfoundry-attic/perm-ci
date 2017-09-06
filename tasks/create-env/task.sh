@@ -112,8 +112,11 @@ function encrypt_and_commit() {
 
   file="$1"
 
+  if [[ -f "${file}.enc" ]]; then
+    chmod +w "${file}.enc"
+  fi
   cryptdo-bootstrap -p "$CRYPTDO_PASSWORD" "$file"
-  chmod +w "$file"
+  chmod +w "${file}.enc"
   git_status="$(git status --porcelain)"
 
   if echo "$git_status" | grep -q "${file}.enc"; then
@@ -127,7 +130,7 @@ function commit_saved_state() {
 
   pushd "$STATE_DIR"
     git config user.name "${GIT_COMMIT_USERNAME:-"CI Bot"}"
-    git config user.email "${GIT_COMMIT_EMAIL:-"cf-permission@pivotal.io"}"
+    git config user.email "${GIT_COMMIT_EMAIL:-"cf-permissions@pivotal.io"}"
 
     encrypt_and_commit "$BBL_STATE_FILE_NAME"
     encrypt_and_commit "$VARS_STORE_FILE"
