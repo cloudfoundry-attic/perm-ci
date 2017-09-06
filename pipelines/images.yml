@@ -3,6 +3,7 @@ resources:
   type: git
   source:
     uri: git@github.com:pivotal-cf/perm-ci
+    private_key: ((github.private_key))
     branch: master
     paths:
     - images/bbl-cryptdo/*
@@ -11,29 +12,29 @@ resources:
   type: docker-image
   source:
     repository: cfperm/bbl-cryptdo
-    username: ((dockerhub_username))
-    password: ((dockerhub_password))
+    username: ((dockerhub.username))
+    password: ((dockerhub.password))
 
 - name: bbl-version
   type: github-release
   source:
     owner: cloudfoundry
     repository: bosh-bootloader
-    access_token: ((github_access_token))
+    access_token: ((github.access_token))
 
 - name: bosh-cli-version
   type: github-release
   source:
     owner: cloudfoundry
     repository: bosh-cli
-    access_token: ((github_access_token))
+    access_token: ((github.access_token))
 
 - name: cryptdo-version
   type: github-release
   source:
     owner: xoebus
     repository: cryptdo
-    access_token: ((github_access_token))
+    access_token: ((github.access_token))
 
 jobs:
 - name: build-bbl-cryptdo-image
