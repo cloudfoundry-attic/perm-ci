@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eux
+set -eu
 
 PERM_PACKAGE="code.cloudfoundry.org/perm"
 # shellcheck disable=SC2153
