@@ -56,10 +56,10 @@ RUN \
     "https://xoeb.us/keys/cryptdo.pub" \
     -o cryptdo.pub && \
   curl -fSL \
-    "https://github.com/xoebus/cryptdo/releases/download/1.0.0/cryptdo-linux-${CRYPTDO_VERSION}.tgz" \
+    "https://github.com/xoebus/cryptdo/releases/download/${CRYPTDO_VERSION}/cryptdo-linux-${CRYPTDO_VERSION}.tgz" \
     -o "cryptdo-linux-${CRYPTDO_VERSION}.tgz" && \
   curl -fSL \
-    "https://github.com/xoebus/cryptdo/releases/download/1.0.0/cryptdo-linux-${CRYPTDO_VERSION}.tgz.sha256.sig" \
+    "https://github.com/xoebus/cryptdo/releases/download/${CRYPTDO_VERSION}/cryptdo-linux-${CRYPTDO_VERSION}.tgz.sha256.sig" \
     -o cryptdo-sha256.sig && \
   signify-openbsd -C -p cryptdo.pub -x cryptdo-sha256.sig && \
   mv "cryptdo-linux-${CRYPTDO_VERSION}.tgz" cryptdo.tgz && \
