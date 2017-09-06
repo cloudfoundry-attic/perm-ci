@@ -1,11 +1,3 @@
-groups:
-- name: develop
-  jobs:
-  - test-server
-  - bump-submodule
-  - bump-rc
-  - create-release-rc
-
 resource_types:
 - name: gcs
   type: docker-image
@@ -47,6 +39,12 @@ resources:
     bucket: perm-release-candidates
     regexp: perm-(.*).tgz
     json_key: ((gcp.json_key))
+- name: perm-rb
+  type: git
+  source:
+    uri: git@github.com:pivotal-cf/perm-rb
+    branch: master
+    private_key: ((github.private_key))
 
 jobs:
 - name: test-server
@@ -82,16 +80,41 @@ jobs:
       repository: updated-perm-release/parent-repo
       rebase: true
 
-- name: bump-rc
+- name: test-ruby-client
   plan:
   - aggregate:
-    - get: version
-      params:
-        pre: rc
     - get: perm
       passed:
       - bump-submodule
     - get: perm-release
+      trigger: true
+    - get: perm-rb
+      trigger: true
+    - get: perm-ci
+  - task: build-perm-binary
+    file: perm-ci/tasks/build-binary/task.yml
+    input_mapping:
+      release: perm-release
+    output_mapping:
+      bin-dir: perm-bin-dir
+    params:
+      PACKAGE_PATH: code.cloudfoundry.org/perm/cmd/perm
+      BINARY_NAME: perm
+  - task: test-ruby-client
+    file: perm-ci/tasks/test-ruby-client/task.yml
+
+- name: bump-rc
+  plan:
+  - aggregate:
+    - get: perm
+      passed:
+      - test-ruby-client
+    - get: version
+      params:
+        pre: rc
+    - get: perm-release
+      passed:
+      - test-ruby-client
       trigger: true
   - put: version
     params:
