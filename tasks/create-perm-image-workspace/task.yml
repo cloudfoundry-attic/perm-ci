@@ -1,0 +1,17 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: alpine
+
+inputs:
+- name: perm-image-src
+- name: perm-bin-dir
+- name: perm-ci
+
+outputs:
+- name: perm-image-workspace
+
+run:
+  path: perm-ci/tasks/create-perm-image-workspace/task.sh
