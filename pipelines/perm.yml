@@ -33,10 +33,10 @@ resources:
     key: version
     access_key_id: ((gcp.access_key_id))
     secret_access_key: ((gcp.secret_access_key))
-- name: release-rc
+- name: release-alpha
   type: gcs
   source:
-    bucket: perm-release-candidates
+    bucket: perm-alphas
     regexp: perm-(.*).tgz
     json_key: ((gcp.json_key))
 - name: perm-rb
@@ -103,7 +103,7 @@ jobs:
   - task: test-ruby-client
     file: perm-ci/tasks/test-ruby-client/task.yml
 
-- name: bump-rc
+- name: bump-alpha
   plan:
   - aggregate:
     - get: perm
@@ -111,7 +111,7 @@ jobs:
       - test-ruby-client
     - get: version
       params:
-        pre: rc
+        pre: alpha
     - get: perm-release
       passed:
       - test-ruby-client
@@ -120,16 +120,16 @@ jobs:
     params:
       file: version/version
 
-- name: create-release-rc
+- name: create-release-alpha
   plan:
   - aggregate:
     - get: version
       passed:
-      - bump-rc
+      - bump-alpha
       trigger: true
     - get: perm-release
       passed:
-      - bump-rc
+      - bump-alpha
       trigger: true
     - get: perm-ci
   - task: create-release
@@ -138,6 +138,6 @@ jobs:
       release: perm-release
     params:
       RELEASE_NAME: perm
-  - put: release-rc
+  - put: release-alpha
     params:
       file: release-output/perm-*.tgz
