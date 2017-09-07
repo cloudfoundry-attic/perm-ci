@@ -1,4 +1,17 @@
+resource_types:
+- name: gcs
+  type: docker-image
+  source:
+    repository: frodenas/gcs-resource
+
 resources:
+- name: perm-ci
+  type: git
+  source:
+    uri: git@github.com:pivotal-cf/perm-ci
+    branch: master
+    private_key: ((github.private_key))
+
 - name: bbl-cryptdo-image-src
   type: git
   source:
@@ -36,7 +49,45 @@ resources:
     repository: cryptdo
     access_token: ((github.access_token))
 
+- name: perm-alpha
+  type: gcs
+  source:
+    bucket: perm-alphas
+    regexp: perm-(\d+\.\d+\.\d+.*).tgz
+    json_key: ((gcp.json_key))
+
+- name: perm-image-alpha
+  type: docker-image
+  source:
+    repository: cfperm/perm
+    tag: alpha
+    username: ((dockerhub.username))
+    password: ((dockerhub.password))
+
+- name: perm-image-src
+  type: git
+  source:
+    uri: git@github.com:pivotal-cf/perm-ci
+    private_key: ((github.private_key))
+    branch: master
+    paths:
+    - images/perm/*
+
 jobs:
+- name: build-perm-image-alpha
+  plan:
+  - aggregate:
+    - get: perm-bin-dir
+      resource: perm-alpha
+      trigger: true
+    - get: perm-image-src
+    - get: perm-ci
+  - task: create-perm-image-workspace
+    file: perm-ci/tasks/create-perm-image-workspace/task.yml
+  - put: perm-image-alpha
+    params:
+      build: perm-image-workspace
+
 - name: build-bbl-cryptdo-image
   plan:
   - aggregate:
