@@ -8,14 +8,14 @@ resources:
 - name: perm-ci
   type: git
   source:
-    uri: git@github.com:pivotal-cf/perm-ci
+    uri: git@github.com:cloudfoundry-incubator/perm-ci
     branch: master
     private_key: ((github.private_key))
 
 - name: bbl-cryptdo-image-src
   type: git
   source:
-    uri: git@github.com:pivotal-cf/perm-ci
+    uri: git@github.com:cloudfoundry-incubator/perm-ci
     private_key: ((github.private_key))
     branch: master
     paths:
@@ -67,7 +67,7 @@ resources:
 - name: perm-image-src
   type: git
   source:
-    uri: git@github.com:pivotal-cf/perm-ci
+    uri: git@github.com:cloudfoundry-incubator/perm-ci
     private_key: ((github.private_key))
     branch: master
     paths:
