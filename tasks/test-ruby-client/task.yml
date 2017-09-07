@@ -14,3 +14,4 @@ inputs:
 - name: perm-bin-dir
 - name: perm-rb
 - name: perm-ci
+- name: version

@@ -4,10 +4,11 @@ set -eu
 
 PERM_HOSTNAME=localhost
 PERM_PORT=8888
+VERSION="$(cat version/version)"
 
 export PERM_RPC_HOST="${PERM_HOSTNAME}:${PERM_PORT}"
 
-"${PWD}/perm-bin-dir/perm" --listen-hostname "$PERM_HOSTNAME" --listen-port "$PERM_PORT" &
+"${PWD}/perm-bin-dir/perm-${VERSION}" --listen-hostname "$PERM_HOSTNAME" --listen-port "$PERM_PORT" &
 CHILD_PID=$!
 
 function salt_earth() {

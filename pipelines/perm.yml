@@ -37,7 +37,7 @@ resources:
   type: gcs
   source:
     bucket: perm-alphas
-    regexp: perm-(.*).tgz
+    regexp: perm-release-(.*).tgz
     json_key: ((gcp.json_key))
 - name: perm-rb
   type: git
@@ -45,6 +45,12 @@ resources:
     uri: git@github.com:pivotal-cf/perm-rb
     branch: master
     private_key: ((github.private_key))
+- name: binary-alpha
+  type: gcs
+  source:
+    bucket: perm-alphas
+    regexp: perm-(\d+\.\d+\.\d+.*)
+    json_key: ((gcp.json_key))
 
 jobs:
 - name: test-server
@@ -80,47 +86,22 @@ jobs:
       repository: updated-perm-release/parent-repo
       rebase: true
 
-- name: test-ruby-client
-  plan:
-  - aggregate:
-    - get: perm
-      passed:
-      - bump-submodule
-    - get: perm-release
-      trigger: true
-    - get: perm-rb
-      trigger: true
-    - get: perm-ci
-  - task: build-perm-binary
-    file: perm-ci/tasks/build-binary/task.yml
-    input_mapping:
-      release: perm-release
-    output_mapping:
-      bin-dir: perm-bin-dir
-    params:
-      PACKAGE_PATH: code.cloudfoundry.org/perm/cmd/perm
-      BINARY_NAME: perm
-  - task: test-ruby-client
-    file: perm-ci/tasks/test-ruby-client/task.yml
-
 - name: bump-alpha
   plan:
   - aggregate:
     - get: perm
       passed:
-      - test-ruby-client
+      - bump-submodule
     - get: version
       params:
         pre: alpha
     - get: perm-release
-      passed:
-      - test-ruby-client
       trigger: true
   - put: version
     params:
       file: version/version
 
-- name: create-release-alpha
+- name: create-alpha
   plan:
   - aggregate:
     - get: version
@@ -132,12 +113,41 @@ jobs:
       - bump-alpha
       trigger: true
     - get: perm-ci
-  - task: create-release
-    file: perm-ci/tasks/create-release/task.yml
-    input_mapping:
-      release: perm-release
-    params:
-      RELEASE_NAME: perm
+  - aggregate:
+    - task: build-perm-binary
+      file: perm-ci/tasks/build-binary/task.yml
+      input_mapping:
+        release: perm-release
+      output_mapping:
+        bin-dir: perm-bin-dir
+      params:
+        PACKAGE_PATH: code.cloudfoundry.org/perm/cmd/perm
+        BINARY_NAME: perm
+    - task: create-release
+      file: perm-ci/tasks/create-release/task.yml
+      input_mapping:
+        release: perm-release
+      params:
+        RELEASE_NAME: perm
   - put: release-alpha
     params:
       file: release-output/perm-*.tgz
+  - put: binary-alpha
+    params:
+      file: perm-bin-dir/perm-(.*)
+
+- name: test-ruby-client
+  plan:
+  - aggregate:
+    - get: perm-rb
+      trigger: true
+    - get: perm-bin-dir
+      resource: binary-alpha
+      passed:
+      - create-alpha
+      trigger: true
+    - get: perm-ci
+    - get: version
+  - task: test-ruby-client
+    file: perm-ci/tasks/test-ruby-client/task.yml
+

@@ -9,6 +9,7 @@ image_resource:
 inputs:
 - name: release
 - name: perm-ci
+- name: version
 
 outputs:
 - name: bin-dir
