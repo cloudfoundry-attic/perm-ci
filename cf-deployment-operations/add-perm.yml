@@ -1,0 +1,34 @@
+- type: replace
+  path: /instance_groups/-
+  value:
+    name: perm
+    instances: 1
+    azs: [z1]
+    vm_type: minimal
+    stemcell: default
+    networks:
+    - name: default
+    jobs:
+    - name: perm
+      release: perm
+      properties: {}
+    - name: bpm
+      release: bpm
+      properties: {}
+    - name: consul_agent
+      release: consul
+      consumes:
+        consul_common: {from: consul_common_link}
+        consul_server: nil
+        consul_client: {from: consul_client_link}
+      properties:
+        consul:
+          agent:
+            services:
+              perm: {}
+
+- type: replace
+  path: /releases/-
+  value:
+    name: perm
+    version: latest
