@@ -15,3 +15,6 @@ inputs:
 
 run:
   path: perm-ci/tasks/test-capi/task.sh
+
+params:
+  DB: postgres
