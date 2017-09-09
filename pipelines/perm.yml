@@ -51,6 +51,18 @@ resources:
     bucket: perm-alphas
     regexp: perm-(\d+\.\d+\.\d+.*).tgz
     json_key: ((gcp.json_key))
+- name: capi-ci
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/capi-ci
+    branch: master
+    private_key: ((github.private_key))
+- name: cloud_controller_ng
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/cloud_controller_ng
+    branch: master
+    private_key: ((github.private_key))
 
 jobs:
 - name: test-server
@@ -151,3 +163,17 @@ jobs:
   - task: test-ruby-client
     file: perm-ci/tasks/test-ruby-client/task.yml
 
+- name: test-capi
+  plan:
+  - aggregate:
+    - get: perm-ci
+    - get: capi-ci
+    - get: perm-bin-dir
+      resource: binary-alpha
+      passed:
+      - test-ruby-client
+      trigger: true
+    - get: version
+    - get: cloud_controller_ng
+  - task: test-capi
+    file: perm-ci/tasks/test-capi/task.yml
