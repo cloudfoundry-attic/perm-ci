@@ -21,5 +21,5 @@ trap salt_earth EXIT
 
 pushd perm-rb
   bundle install
-  bundle exec rspec
+  bundle exec rake
 popd
