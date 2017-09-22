@@ -3,6 +3,10 @@ resource_types:
   type: docker-image
   source:
     repository: frodenas/gcs-resource
+- name: git-branch-heads
+  type: docker-image
+  source:
+    repository: vito/git-branch-heads-resource
 
 resources:
 - name: perm-ci
@@ -57,11 +61,12 @@ resources:
     uri: git@github.com:cloudfoundry/capi-ci
     branch: master
     private_key: ((github.private_key))
-- name: cloud_controller_ng
-  type: git
+- name: cloud_controller_ng-perm-prs
+  type: git-branch-heads
   source:
     uri: git@github.com:cloudfoundry/cloud_controller_ng
-    branch: master
+    branches:
+    - perm/*
     private_key: ((github.private_key))
 
 jobs:
@@ -176,11 +181,13 @@ jobs:
       resource: binary-alpha
       passed:
       - test-ruby-client
-      trigger: true
     - get: release-alpha
       passed:
       - test-ruby-client
     - get: version
     - get: cloud_controller_ng
+      resource: cloud_controller_ng-perm-prs
+      trigger: true
+      version: every
   - task: test-capi
     file: perm-ci/tasks/test-capi/task.yml
