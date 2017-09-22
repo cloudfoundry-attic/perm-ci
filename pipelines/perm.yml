@@ -159,6 +159,9 @@ jobs:
       passed:
       - create-alpha
       trigger: true
+    - get: release-alpha
+      passed:
+      - create-alpha
     - get: perm-ci
     - get: version
   - task: test-ruby-client
@@ -174,6 +177,9 @@ jobs:
       passed:
       - test-ruby-client
       trigger: true
+    - get: release-alpha
+      passed:
+      - test-ruby-client
     - get: version
     - get: cloud_controller_ng
   - task: test-capi
