@@ -31,7 +31,7 @@
   path: /releases/-
   value:
     name: perm
-    version: latest
+    version: ((perm_version))
 
 - type: replace
   path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/perm?/enabled
