@@ -21,5 +21,5 @@ pushd release > /dev/null
   bosh create-release \
     --name "$RELEASE_NAME" \
     --version "$VERSION" \
-    --tarball "${OUTPUT_DIR}/${RELEASE_NAME}-${VERSION}.tgz"
+    --tarball "${OUTPUT_DIR}/${TARBALL_NAME}-${VERSION}.tgz"
 popd > /dev/null

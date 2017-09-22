@@ -141,6 +141,7 @@ jobs:
         release: perm-release
       params:
         RELEASE_NAME: perm
+        TARBALL_NAME: perm-release
   - put: release-alpha
     params:
       file: release-output/perm-*.tgz
