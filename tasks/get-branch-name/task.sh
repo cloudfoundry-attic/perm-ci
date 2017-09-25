@@ -2,4 +2,4 @@
 
 set -eu
 
-git --git-dir="${REPO}/.git" rev-parse --abbrev-head HEAD > branch-dir/branch
+git --git-dir=repo/.git rev-parse --abbrev-head HEAD > branch-dir/branch
