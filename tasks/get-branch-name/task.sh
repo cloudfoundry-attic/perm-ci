@@ -2,6 +2,8 @@
 
 set -eu
 
+BRANCH_FILE="${PWD}/branch-dir/branch"
+
 # From https://stackoverflow.com/a/6064223
 pushd repo
   branches="$(git for-each-ref --format="%(objectname) %(refname:short)" refs/heads | awk "/^$(git rev-parse HEAD)/ {print \$2}" | head -n 1)"
@@ -13,5 +15,5 @@ pushd repo
   fi
 
   branch="$(echo "$branches" | head -n 1)"
-  echo "$branch" > branch-dir/branch
+  echo "$branch" > "$BRANCH_FILE"
 popd
