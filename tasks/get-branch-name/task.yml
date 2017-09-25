@@ -10,5 +10,8 @@ inputs:
 - name: perm-ci
 - name: repo
 
+outputs:
+- name: branch-dir
+
 run:
   path: perm-ci/tasks/get-branch-name/task.sh
