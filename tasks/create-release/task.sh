@@ -18,7 +18,12 @@ if [[ -z "$VERSION" ]]; then
 fi
 
 pushd release > /dev/null
+  if [[ "${SYNC_BLOBS}" == "true" ]]; then
+    bosh sync-blobs --sha2
+  fi
+
   bosh create-release \
+    --sha2 \
     --name "$RELEASE_NAME" \
     --version "$VERSION" \
     --tarball "${OUTPUT_DIR}/${TARBALL_NAME}-${VERSION}.tgz"
