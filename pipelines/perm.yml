@@ -55,6 +55,12 @@ resources:
     bucket: perm-alphas
     regexp: perm-(\d+\.\d+\.\d+.*).tgz
     json_key: ((gcp.json_key))
+- name: capi-release-alpha
+  type: gcs
+  source:
+    bucket: perm-alphas
+    regexp: capi-release-(\d*)-.*-for-perm-.*.tgz
+    json_key: ((gcp.json_key))
 - name: capi-ci
   type: git
   source:
@@ -67,6 +73,12 @@ resources:
     uri: git@github.com:cloudfoundry/cloud_controller_ng
     branches:
     - perm/*
+    private_key: ((github.private_key))
+- name: capi-release-develop
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/capi-release
+    branch: develop
     private_key: ((github.private_key))
 
 jobs:
@@ -191,3 +203,46 @@ jobs:
       version: every
   - task: test-capi
     file: perm-ci/tasks/test-capi/task.yml
+
+- name: create-capi-alpha
+  plan:
+  - aggregate:
+    - get: perm-ci
+    - get: version
+      passed:
+      - test-capi
+    - get: capi-release
+      resource: capi-release-develop
+    - get: cloud_controller_ng
+      resource: cloud_controller_ng-perm-prs
+      trigger: true
+      version: every
+      passed:
+      - test-capi
+    - get: release-alpha
+      passed:
+      - test-capi
+  - aggregate:
+    - task: bump-submodule
+      file: perm-ci/tasks/bump-submodule/task.yml
+      input_mapping:
+        parent-repo: capi-release
+        submodule-repo: cloud_controller_ng
+      output_mapping:
+        updated-parent-repo: updated-capi-release-dir
+      params:
+        SUBMODULE_PATH: src/cloud_controller_ng
+        SUBMODULE_NAME: cloud_controller_ng
+    - task: get-branch-name
+      file: perm-ci/tasks/get-branch-name/task.yml
+      input_mapping:
+        repo: cloud_controller_ng
+  - task: create-capi-release
+    file: perm-ci/tasks/create-capi-release/task.yml
+    input_mapping:
+      release-dir: updated-capi-release-dir
+    params:
+      RELEASE_NAME: capi
+  - put: capi-release-alpha
+    params:
+      file: release-output/capi-release-*.tgz
