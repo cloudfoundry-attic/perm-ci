@@ -8,7 +8,7 @@ export PERM_RPC_HOST="${PERM_HOSTNAME}:${PERM_PORT}"
 
 tar -zxf "./perm-bin-dir/perm-${VERSION}.tgz" -C perm-bin-dir
 
-./perm-bin-dir/perm --listen-hostname "$PERM_HOSTNAME" --listen-port "$PERM_PORT" &
+./perm-bin-dir/perm --listen-hostname "$PERM_HOSTNAME" --listen-port "$PERM_PORT" > "${PWD}/perm.out.log" &
 CHILD_PID=$!
 
 function salt_earth() {
