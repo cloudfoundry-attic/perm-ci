@@ -25,7 +25,8 @@
         consul:
           agent:
             services:
-              perm: {}
+              perm:
+                name: perm
 
 - type: replace
   path: /releases/-
