@@ -11,7 +11,9 @@
     jobs:
     - name: perm
       release: perm
-      properties: {}
+      properties:
+        log_level: debug
+        tls: ((perm/tls))
     - name: bpm
       release: bpm
       properties: {}
@@ -33,6 +35,27 @@
   value:
     name: perm
     version: ((perm_version))
+
+- type: replace
+  path: /variables/-
+  value:
+    name: perm/tls-ca
+    type: certificate
+    options:
+      is_ca: true
+      common_name: perm_ca
+
+- type: replace
+  path: /variables/-
+  value:
+    name: perm/tls
+    type: certificate
+    options:
+      ca: perm/tls-ca
+      common_name: perm.service.cf.internal
+      extended_key_usage:
+      - client_auth
+      - server_auth
 
 - type: replace
   path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/perm?/enabled
