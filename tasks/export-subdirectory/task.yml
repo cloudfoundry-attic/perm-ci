@@ -1,0 +1,20 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: alpine
+
+inputs:
+- name: parent
+- name: perm-ci
+
+outputs:
+- name: subdirectory
+
+params:
+  SUBDIRECTORY_PATH:
+
+run:
+  path: perm-ci/tasks/export-subdirectory/task.sh
+
