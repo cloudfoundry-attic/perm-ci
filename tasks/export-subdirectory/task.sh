@@ -2,4 +2,4 @@
 
 set -eu
 
-cp -R "parent/${SUBDIRECTORY_PATH}"/* subdirectory/
+cp -R "parent/${SUBDIRECTORY_PATH}/." subdirectory/
