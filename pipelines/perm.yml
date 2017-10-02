@@ -59,7 +59,7 @@ resources:
   type: gcs
   source:
     bucket: perm-alphas
-    regexp: capi-release-(\d*)-.*-for-perm-.*.tgz
+    regexp: capi-release-(\d+)-for-perm-.*.tgz
     json_key: ((gcp.json_key))
 - name: capi-ci
   type: git
@@ -184,6 +184,27 @@ jobs:
   - task: test-ruby-client
     file: perm-ci/tasks/test-ruby-client/task.yml
 
+- name: test-capi-pr
+  plan:
+  - aggregate:
+    - get: perm-ci
+    - get: capi-ci
+    - get: perm-bin-dir
+      resource: binary-alpha
+      trigger: true
+      passed:
+      - create-alpha
+    - get: release-alpha
+      passed:
+      - create-alpha
+    - get: version
+    - get: cloud_controller_ng
+      resource: cloud_controller_ng-perm-prs
+      trigger: true
+      version: every
+  - task: test-capi
+    file: perm-ci/tasks/test-capi/task.yml
+
 - name: test-capi
   plan:
   - aggregate:
@@ -191,16 +212,24 @@ jobs:
     - get: capi-ci
     - get: perm-bin-dir
       resource: binary-alpha
+      trigger: true
       passed:
-      - test-ruby-client
+      - create-alpha
     - get: release-alpha
       passed:
-      - test-ruby-client
+      - create-alpha
     - get: version
-    - get: cloud_controller_ng
-      resource: cloud_controller_ng-perm-prs
+    - get: capi-release
+      resource: capi-release-develop
       trigger: true
-      version: every
+  - task: export-cloud_controller_ng
+    file: perm-ci/tasks/export-subdirectory/task.yml
+    input_mapping:
+      parent: capi-release
+    output_mapping:
+      subdirectory: cloud_controller_ng
+    params:
+      SUBDIRECTORY_PATH: src/cloud_controller_ng
   - task: test-capi
     file: perm-ci/tasks/test-capi/task.yml
 
@@ -213,34 +242,16 @@ jobs:
       - test-capi
     - get: capi-release
       resource: capi-release-develop
-    - get: cloud_controller_ng
-      resource: cloud_controller_ng-perm-prs
       trigger: true
-      version: every
       passed:
       - test-capi
     - get: release-alpha
       passed:
       - test-capi
-  - aggregate:
-    - task: bump-submodule
-      file: perm-ci/tasks/bump-submodule/task.yml
-      input_mapping:
-        parent-repo: capi-release
-        submodule-repo: cloud_controller_ng
-      output_mapping:
-        updated-parent-repo: updated-capi-release-dir
-      params:
-        SUBMODULE_PATH: src/cloud_controller_ng
-        SUBMODULE_NAME: cloud_controller_ng
-    - task: get-branch-name
-      file: perm-ci/tasks/get-branch-name/task.yml
-      input_mapping:
-        repo: cloud_controller_ng
   - task: create-capi-release
     file: perm-ci/tasks/create-capi-release/task.yml
     input_mapping:
-      release-dir: updated-capi-release-dir
+      release-dir: capi-release
     params:
       RELEASE_NAME: capi
   - put: capi-release-alpha
