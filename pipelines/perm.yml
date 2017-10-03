@@ -80,26 +80,31 @@ resources:
     uri: git@github.com:cloudfoundry/capi-release
     branch: develop
     private_key: ((github.private_key))
+- name: tracker
+  type: tracker
+  source:
+    token: ((tracker.api_token))
+    project_id: ((tracker.project_id))
 
 jobs:
 - name: test-server
   plan:
   - aggregate:
-    - get: perm-ci
     - get: perm
       trigger: true
+    - get: perm-ci
   - task: test-server
     file: perm-ci/tasks/test-server/task.yml
 
 - name: bump-submodule
   plan:
   - aggregate:
-    - get: perm-ci
-    - get: perm-release
     - get: perm
       passed:
       - test-server
       trigger: true
+    - get: perm-ci
+    - get: perm-release
   - task: bump-submodule
     file: perm-ci/tasks/bump-submodule/task.yml
     input_mapping:
@@ -121,11 +126,11 @@ jobs:
     - get: perm
       passed:
       - bump-submodule
+    - get: perm-release
+      trigger: true
     - get: version
       params:
         pre: alpha
-    - get: perm-release
-      trigger: true
   - put: version
     params:
       file: version/version
@@ -133,15 +138,17 @@ jobs:
 - name: create-alpha
   plan:
   - aggregate:
-    - get: version
+    - get: perm
       passed:
       - bump-alpha
-      trigger: true
+    - get: perm-ci
     - get: perm-release
       passed:
       - bump-alpha
+    - get: version
       trigger: true
-    - get: perm-ci
+      passed:
+      - bump-alpha
   - aggregate:
     - task: build-perm-binary
       file: perm-ci/tasks/build-binary/task.yml
@@ -169,58 +176,75 @@ jobs:
 - name: test-ruby-client
   plan:
   - aggregate:
-    - get: perm-rb
-      trigger: true
+    - get: perm
+      passed:
+      - create-alpha
     - get: perm-bin-dir
       resource: binary-alpha
       passed:
       - create-alpha
+    - get: perm-ci
+    - get: perm-rb
       trigger: true
+    - get: perm-release
+      passed:
+      - create-alpha
     - get: release-alpha
       passed:
       - create-alpha
-    - get: perm-ci
     - get: version
+      passed:
+      - create-alpha
+      trigger: true
   - task: test-ruby-client
     file: perm-ci/tasks/test-ruby-client/task.yml
 
 - name: test-capi-pr
   plan:
   - aggregate:
-    - get: perm-ci
     - get: capi-ci
-    - get: perm-bin-dir
-      resource: binary-alpha
-      trigger: true
-      passed:
-      - create-alpha
-    - get: release-alpha
-      passed:
-      - create-alpha
-    - get: version
     - get: cloud_controller_ng
       resource: cloud_controller_ng-perm-prs
       trigger: true
       version: every
+    - get: perm-bin-dir
+      resource: binary-alpha
+      passed:
+      - create-alpha
+    - get: perm-ci
+    - get: release-alpha
+      passed:
+      - create-alpha
+    - get: version
+      passed:
+      - create-alpha
   - task: test-capi
     file: perm-ci/tasks/test-capi/task.yml
 
 - name: test-capi
   plan:
   - aggregate:
-    - get: perm-ci
     - get: capi-ci
+    - get: capi-release
+      resource: capi-release-develop
+      trigger: true
+    - get: perm
+      passed:
+      - create-alpha
     - get: perm-bin-dir
       resource: binary-alpha
-      trigger: true
+      passed:
+      - create-alpha
+    - get: perm-ci
+    - get: perm-release
       passed:
       - create-alpha
     - get: release-alpha
       passed:
       - create-alpha
     - get: version
-    - get: capi-release
-      resource: capi-release-develop
+      passed:
+      - create-alpha
       trigger: true
   - task: export-cloud_controller_ng
     file: perm-ci/tasks/export-subdirectory/task.yml
@@ -236,24 +260,64 @@ jobs:
 - name: create-capi-alpha
   plan:
   - aggregate:
-    - get: perm-ci
-    - get: version
+    - get: capi-release
+      trigger: true
+      resource: capi-release-develop
       passed:
       - test-capi
-    - get: capi-release
-      resource: capi-release-develop
-      trigger: true
+    - get: perm
+      passed:
+      - test-capi
+    - get: perm-ci
+    - get: perm-release
       passed:
       - test-capi
     - get: release-alpha
       passed:
       - test-capi
+    - get: version
+      trigger: true
+      passed:
+      - test-capi
   - task: create-capi-release
     file: perm-ci/tasks/create-capi-release/task.yml
     input_mapping:
-      release-dir: capi-release
+      release: capi-release
     params:
       RELEASE_NAME: capi
   - put: capi-release-alpha
     params:
       file: release-output/capi-release-*.tgz
+
+- name: deliver-stories
+  plan:
+  - aggregate:
+    - get: capi-release
+      resource: capi-release-develop
+      passed:
+      - create-capi-alpha
+    - get: perm
+      passed:
+      - create-capi-alpha
+    - get: perm-ci
+    - get: perm-rb
+      passed:
+      - test-ruby-client
+    - get: perm-release
+      passed:
+      - create-capi-alpha
+    - get: release-alpha
+      passed:
+      - create-capi-alpha
+    - get: version
+      trigger: true
+      passed:
+      - create-capi-alpha
+  - put: tracker
+    params:
+      repos:
+      - capi-release
+      - perm-release/src/cloud_controller_ng
+      - perm
+      - perm-rb
+      - perm-release
