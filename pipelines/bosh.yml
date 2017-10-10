@@ -1,0 +1,85 @@
+jobs:
+- name: destroy-bosh-lites
+  plan:
+  - aggregate:
+    - get: bosh-deployment
+    - put: broken-pool
+      params:
+        acquire: true
+    - get: capi-ci
+  - task: download-from-gcs
+    file: capi-ci/ci/gcs/download-from-gcs.yml
+    input_mapping:
+      environment: broken-pool
+    output_mapping:
+      destination-directory: director-state
+    params: &gcp-environment-params
+      GCP_JSON_KEY: ((gcp.json_key))
+      GCP_BUCKET: ((terraform.bucket))
+      GCP_PATH: director-state
+      USE_ENV_NAMED_SUBDIR: true
+  - task: delete-bosh-lite
+    file: capi-ci/ci/bosh-lite/delete-bosh-lite.yml
+  - put: terraform
+    params:
+      action: destroy
+      env_name_file: broken-pool/name
+      terraform_source: capi-ci/terraform/bosh-lite/
+      vars:
+        project_id: ((gcp.project_id))
+        json_key: ((gcp.json_key))
+        dns_project_id: ((gcp.project_id))
+        dns_json_key: ((gcp.json_key))
+        system_domain_suffix: ((terraform.system_domain_suffix))
+        dns_zone_name: ((terraform.dns_zone_name))
+        region: ((gcp.region))
+        zone: ((gcp.zone))
+    get_params:
+      action: destroy
+  - task: delete-from-gcs
+    file: capi-ci/ci/gcs/delete-from-gcs.yml
+    input_mapping:
+      environment: broken-pool
+    params: *gcp-environment-params
+  - put: broken-pool
+    params:
+      remove: broken-pool/
+
+resources:
+- name: bosh-deployment
+  type: git
+  source:
+    branch: master
+    uri: git@github.com:cloudfoundry/bosh-deployment.git
+    private_key: ((github.private_key))
+
+- name: broken-pool
+  type: pool
+  source:
+    uri: ((broken_pool_repo_uri))
+    branch: master
+    private_key: ((github.private_key))
+    pool: bosh-lites-broken
+
+- name: capi-ci
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/capi-ci
+    branch: master
+    private_key: ((github.private_key))
+
+- name: terraform
+  type: terraform
+  source:
+    storage:
+      endpoint: storage.googleapis.com
+      bucket: ((terraform.bucket))
+      bucket_path: bosh-lite/
+      access_key_id: ((gcp.access_key_id))
+      secret_access_key: ((gcp.secret_access_key))
+
+resource_types:
+- name: terraform
+  type: docker-image
+  source:
+    repository: ljfranklin/terraform-resource
