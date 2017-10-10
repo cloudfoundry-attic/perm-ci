@@ -27,7 +27,8 @@ resources:
   type: git
   source:
     branch: master
-    uri: https://github.com/cloudfoundry/bosh-deployment.git
+    uri: git@github.com:cloudfoundry/bosh-deployment.git
+    private_key: ((github.private_key))
 - name: capi-ci
   type: git
   source:
@@ -416,6 +417,8 @@ jobs:
         env_name_file: terraform/name
         terraform_source: capi-ci/terraform/bosh-lite
         vars: *test_cf_terraform_vars
+      get_params:
+        action: destroy
 
 - name: test-cf
   plan:
