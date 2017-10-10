@@ -43,7 +43,6 @@ function main() {
   check_args "$@"
   check_installed lpass
   check_installed fly
-  # lpass sync
   update_pipeline "$1"
 }
 
