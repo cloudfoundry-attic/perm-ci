@@ -364,6 +364,8 @@ jobs:
         dns_json_key: ((gcp.json_key))
         system_domain_suffix: ((terraform.system_domain_suffix))
         dns_zone_name: ((terraform.dns_zone_name))
+        region: ((gcp.region))
+        zone: ((gcp.zone))
   - do:
     - task: create-bosh-lite
       file: capi-ci/ci/bosh-lite/create-bosh-lite.yml
