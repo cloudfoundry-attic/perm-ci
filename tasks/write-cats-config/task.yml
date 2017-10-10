@@ -1,0 +1,17 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: pcfseceng/credhub
+
+inputs:
+- name: environment-directory
+- name: perm-ci
+- name: terraform
+
+outputs:
+- name: cats-config-dir
+
+run:
+  path: perm-ci/tasks/write-cats-config/task.sh
