@@ -1,4 +1,8 @@
 resource_types:
+- name: bosh-deployment
+  type: docker-image
+  source:
+    repository: cloudfoundry/bosh-deployment-resource
 - name: gcs
   type: docker-image
   source:
@@ -7,108 +11,41 @@ resource_types:
   type: docker-image
   source:
     repository: vito/git-branch-heads-resource
-- name: bosh-deployment
-  type: docker-image
-  source:
-    repository: cloudfoundry/bosh-deployment-resource
 - name: terraform
   type: docker-image
   source:
     repository: ljfranklin/terraform-resource
 
 resources:
-- name: perm-ci
-  type: git
-  source:
-    uri: git@github.com:cloudfoundry-incubator/perm-ci
-    branch: master
-    private_key: ((github.private_key))
-- name: perm
-  type: git
-  source:
-    uri: git@github.com:cloudfoundry-incubator/perm
-    branch: master
-    private_key: ((github.private_key))
-- name: perm-release
-  type: git
-  source:
-    uri: git@github.com:cloudfoundry-incubator/perm-release
-    branch: master
-    private_key: ((github.private_key))
-- name: version
-  type: semver
-  source:
-    driver: s3
-    endpoint: storage.googleapis.com
-    initial_version: 0.0.0
-    bucket: perm-releases
-    key: version
-    access_key_id: ((gcp.access_key_id))
-    secret_access_key: ((gcp.secret_access_key))
-- name: release-alpha
-  type: gcs
-  source:
-    bucket: perm-alphas
-    regexp: perm-release-(.*).tgz
-    json_key: ((gcp.json_key))
-- name: perm-rb
-  type: git
-  source:
-    uri: git@github.com:cloudfoundry-incubator/perm-rb
-    branch: master
-    private_key: ((github.private_key))
 - name: binary-alpha
   type: gcs
   source:
     bucket: perm-alphas
     regexp: perm-(\d+\.\d+\.\d+.*).tgz
     json_key: ((gcp.json_key))
-- name: capi-release-alpha
-  type: gcs
+- name: bosh-deployment
+  type: git
   source:
-    bucket: perm-alphas
-    regexp: capi-release-(\d+)-for-perm-.*.tgz
-    json_key: ((gcp.json_key))
+    branch: master
+    uri: https://github.com/cloudfoundry/bosh-deployment.git
 - name: capi-ci
   type: git
   source:
     uri: git@github.com:cloudfoundry/capi-ci
     branch: master
     private_key: ((github.private_key))
-- name: cloud_controller_ng-perm-prs
-  type: git-branch-heads
+- name: capi-release-alpha
+  type: gcs
   source:
-    uri: git@github.com:cloudfoundry/cloud_controller_ng
-    branches:
-    - perm/*
-    private_key: ((github.private_key))
+    bucket: perm-alphas
+    regexp: capi-release-(\d+)-for-perm-.*.tgz
+    json_key: ((gcp.json_key))
 - name: capi-release-develop
   type: git
   source:
     uri: git@github.com:cloudfoundry/capi-release
     branch: develop
     private_key: ((github.private_key))
-- name: tracker
-  type: tracker
-  source:
-    token: ((tracker.api_token))
-    project_id: ((tracker.project_id))
-- name: cf-deploy
-  type: bosh-deployment
-- name: terraform
-  type: terraform
-  source:
-    storage:
-      endpoint: storage.googleapis.com
-      bucket: ((terraform.bucket))
-      bucket_path: bosh-lite/
-      access_key_id: ((gcp.access_key_id))
-      secret_access_key: ((gcp.secret_access_key))
-- name: bosh-deployment
-  type: git
-  source:
-    branch: master
-    uri: https://github.com/cloudfoundry/bosh-deployment.git
 - name: cats-concourse-task
   type: git
   source:
@@ -121,12 +58,75 @@ resources:
     branch: master
     private_key: ((github.private_key))
     uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
+- name: cf-deploy
+  type: bosh-deployment
 - name: cf-deployment
   type: git
   source:
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: ((github.private_key))
     branch: release-candidate
+- name: cloud_controller_ng-perm-prs
+  type: git-branch-heads
+  source:
+    uri: git@github.com:cloudfoundry/cloud_controller_ng
+    branches:
+    - perm/*
+    private_key: ((github.private_key))
+- name: perm
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry-incubator/perm
+    branch: master
+    private_key: ((github.private_key))
+- name: perm-rb
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry-incubator/perm-rb
+    branch: master
+    private_key: ((github.private_key))
+- name: perm-ci
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry-incubator/perm-ci
+    branch: master
+    private_key: ((github.private_key))
+- name: perm-release
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry-incubator/perm-release
+    branch: master
+    private_key: ((github.private_key))
+- name: release-alpha
+  type: gcs
+  source:
+    bucket: perm-alphas
+    regexp: perm-release-(.*).tgz
+    json_key: ((gcp.json_key))
+- name: terraform
+  type: terraform
+  source:
+    storage:
+      endpoint: storage.googleapis.com
+      bucket: ((terraform.bucket))
+      bucket_path: bosh-lite/
+      access_key_id: ((gcp.access_key_id))
+      secret_access_key: ((gcp.secret_access_key))
+- name: tracker
+  type: tracker
+  source:
+    token: ((tracker.api_token))
+    project_id: ((tracker.project_id))
+- name: version
+  type: semver
+  source:
+    driver: s3
+    endpoint: storage.googleapis.com
+    initial_version: 0.0.0
+    bucket: perm-releases
+    key: version
+    access_key_id: ((gcp.access_key_id))
+    secret_access_key: ((gcp.secret_access_key))
 
 jobs:
 - name: test-server
