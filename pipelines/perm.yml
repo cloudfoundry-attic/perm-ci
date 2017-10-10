@@ -332,6 +332,10 @@ jobs:
       trigger: true
       passed:
       - create-capi-alpha
+    - get: capi-release
+      resource: capi-release-develop
+      passed:
+      - create-capi-alpha
     - get: cf-deployment
     - get: perm
       passed:
@@ -415,6 +419,10 @@ jobs:
   plan:
   - aggregate:
     - get: capi-ci
+    - get: capi-release
+      resource: capi-release-develop
+      passed:
+      - deploy-cf
     - get: capi-release-alpha
       trigger: true
       passed:
@@ -427,6 +435,9 @@ jobs:
     - get: perm-ci
     - get: perm-release
       trigger: true
+      passed:
+      - deploy-cf
+    - get: release-alpha
       passed:
       - deploy-cf
     - get: terraform
@@ -461,25 +472,25 @@ jobs:
     - get: capi-release
       resource: capi-release-develop
       passed:
-      - create-capi-alpha
+      - test-cf
       - test-capi
     - get: perm
       passed:
-      - create-capi-alpha
+      - test-cf
     - get: perm-ci
     - get: perm-rb
       passed:
       - test-ruby-client
     - get: perm-release
       passed:
-      - create-capi-alpha
+      - test-cf
     - get: release-alpha
       passed:
-      - create-capi-alpha
+      - test-cf
     - get: version
       trigger: true
       passed:
-      - create-capi-alpha
+      - test-cf
   - put: tracker
     params:
       repos:
