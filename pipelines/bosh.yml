@@ -17,6 +17,22 @@ resources:
     uri: git@github.com:cloudfoundry/bosh-deployment.git
     private_key: ((github.private_key))
 
+- name: break-bosh-lites-trigger
+  type: cron
+  source:
+    expression: 0 0 0/1 1/1 * ? *
+    location: America/Los_Angeles
+    fire_immediately: true
+
+- name: broken-bosh-lites-trigger
+  type: git
+  source:
+    branch: master
+    uri: ((broken_pool_repo_uri))
+    private_key: ((github.private_key))
+    paths:
+    - bosh-lites-broken/trigger
+
 - name: broken-pool
   type: pool
   source:
@@ -25,20 +41,19 @@ resources:
     private_key: ((github.private_key))
     pool: bosh-lites-broken
 
+- name: broken-pool-repo
+  type: git
+  source:
+    branch: master
+    uri: ((broken_pool_repo_uri))
+    private_key: ((github.private_key))
+
 - name: capi-ci
   type: git
   source:
     uri: git@github.com:cloudfoundry/capi-ci
     branch: master
     private_key: ((github.private_key))
-
-- name: pending-broken-pool
-  type: pool
-  source:
-    uri: ((broken_pool_repo_uri))
-    branch: master
-    private_key: ((github.private_key))
-    pool: bosh-lites-pending-broken
 
 - name: terraform
   type: terraform
@@ -50,36 +65,73 @@ resources:
       access_key_id: ((gcp.access_key_id))
       secret_access_key: ((gcp.secret_access_key))
 
-- name: break-bosh-lites-trigger
-  type: cron
-  source:
-    expression: 0 0 0/1 1/1 * ? *
-    location: America/Los_Angeles
-    fire_immediately: true
-
 jobs:
 - name: break-bosh-lites
   plan:
   - aggregate:
     - get: break-bosh-lites-trigger
       trigger: true
-    - get: pending-broken-pool
-      resource: pending-broken-pool
-      version: every
-  - put: broken-bosh-lite
-    resource: pending-broken-pool
+    - get: broken-pool-repo
+  - task: do-trigger-stuff
     params:
-      acquire: true
-  - put: broken-pool
+      POOL_NAME: bosh-lites-broken
+      TRIGGER_PATH: bosh-lites-broken/trigger
+    input_mapping:
+      pool-repo: broken-pool-repo
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: concourse/buildroot
+          tag: git
+      inputs:
+      - name: pool-repo
+      outputs:
+      - name: updated-pool-repo-dir
+      params:
+        GIT_COMMIT_EMAIL: cf-permissions@pivotal.io
+        GIT_COMMIT_USERNAME: CI Bot
+        POOL_NAME:
+        TRIGGER_PATH:
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          set -eu
+
+          TRIGGER_PATH="${PWD}/updated-pool-repo-dir/repo/${TRIGGER_PATH}"
+
+          git clone pool-repo updated-pool-repo-dir/repo
+
+          pushd updated-pool-repo-dir/repo
+            git config user.name "$GIT_COMMIT_USERNAME"
+            git config user.email "$GIT_COMMIT_EMAIL"
+
+            # If there are no files in the glob it will expand to the directory path
+            # Prevent this behavior: https://www.cyberciti.biz/faq/bash-loop-over-file/
+            shopt -s nullglob
+
+            for env_path in "${PWD}/${POOL_NAME}/pending/"*; do
+              env="$(basename "$env_path")"
+
+              git mv "${env_path}" "./${POOL_NAME}/unclaimed"
+              git commit -m "Break $env"
+
+              echo "$env" > "${TRIGGER_PATH}"
+
+              git add "${TRIGGER_PATH}"
+              git commit -m "Trigger destruction of $env"
+            done
+          popd
+  - put: broken-pool-repo
     params:
-      add: broken-bosh-lite
-  - put: pending-broken-pool
-    params:
-      remove: broken-bosh-lite
+      repository: updated-pool-repo-dir/repo
 
 - name: destroy-bosh-lites
   plan:
-  - get: broken-pool
+  - get: broken-bosh-lites-trigger
     trigger: true
   - aggregate:
     - get: bosh-deployment

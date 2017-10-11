@@ -55,13 +55,12 @@ resources:
     branch: master
     uri: git@github.com:cloudfoundry/bosh-deployment.git
     private_key: ((github.private_key))
-- name: broken-pool
-  type: pool
+- name: broken-pool-repo
+  type: git
   source:
-    uri: ((broken_pool_repo_uri))
     branch: master
+    uri: ((broken_pool_repo_uri))
     private_key: ((github.private_key))
-    pool: bosh-lites-broken
 - name: capi-ci
   type: git
   source:
@@ -113,13 +112,6 @@ resources:
     branches:
     - perm/*
     private_key: ((github.private_key))
-- name: pending-broken-pool
-  type: pool
-  source:
-    uri: ((broken_pool_repo_uri))
-    branch: master
-    private_key: ((github.private_key))
-    pool: bosh-lites-pending-broken
 - name: perm
   type: git
   source:
@@ -635,21 +627,60 @@ jobs:
     file: perm-ci/tasks/write-cats-config/task.yml
     output_mapping:
       cats-config-dir: integration-config
-  - task: create-empty-lock
-    file: perm-ci/create-empty-lock/task.yml
-    input_mapping:
-      name-dir: terraform
   - task: run-cats
     file: cats-concourse-task/task.yml
     params:
       NODES: 4
-    on_failure:
-      put: pending-broken-pool
-      params:
-        add: lock-dir
-  - put: broken-pool
-    params:
-      add: lock-dir
+    ensure:
+      do:
+      - task: pend-broken-environment
+        params:
+          POOL_NAME: bosh-lites-broken
+        input_mapping:
+          environment-name-dir: terraform
+          pool-repo: broken-pool-repo
+
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: concourse/buildroot
+              tag: git
+
+          inputs:
+          - name: environment-name-dir
+          - name: pool-repo
+          outputs:
+          - name: updated-pool-repo-dir
+
+          params:
+            GIT_COMMIT_EMAIL: cf-permissions@pivotal.io
+            GIT_COMMIT_USERNAME: CI Bot
+            POOL_NAME:
+          run:
+            path: bash
+            args:
+            - -c
+            - |
+              set -eu
+
+              ENV_NAME="$(cat environment-name-dir/name)"
+
+              git clone pool-repo updated-pool-repo-dir/repo
+
+              pushd updated-pool-repo-dir/repo
+                git config user.name "$GIT_COMMIT_USERNAME"
+                git config user.email "$GIT_COMMIT_EMAIL"
+
+                touch "${POOL_NAME}/pending/${ENV_NAME}"
+
+                git add "${POOL_NAME}/pending/${ENV_NAME}"
+                git commit -m "Pend broken environment ${ENV_NAME}"
+              popd
+      - put: broken-pool-repo
+        params:
+          repository: updated-pool-repo-dir/repo
 
 - name: test-cf-pr
   plan:
@@ -688,10 +719,6 @@ jobs:
     output_mapping:
       destination-directory: environment-directory
     params: *gcp-environment-params
-  - task: create-empty-lock
-    file: perm-ci/create-empty-lock/task.yml
-    input_mapping:
-      name-dir: terraform
   - task: write-cats-config
     file: perm-ci/tasks/write-cats-config/task.yml
     output_mapping:
@@ -700,13 +727,56 @@ jobs:
     file: cats-concourse-task/task.yml
     params:
       NODES: 4
-    on_failure:
-      put: pending-broken-pool
-      params:
-        add: lock-dir
-  - put: broken-pool
-    params:
-      add: lock-dir
+    ensure:
+      do:
+      - task: pend-broken-environment
+        params:
+          POOL_NAME: bosh-lites-broken
+        input_mapping:
+          environment-name-dir: terraform
+          pool-repo: broken-pool-repo
+
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: concourse/buildroot
+              tag: git
+
+          inputs:
+          - name: environment-name-dir
+          - name: pool-repo
+          outputs:
+          - name: updated-pool-repo-dir
+
+          params:
+            GIT_COMMIT_EMAIL: cf-permissions@pivotal.io
+            GIT_COMMIT_USERNAME: CI Bot
+            POOL_NAME:
+          run:
+            path: bash
+            args:
+            - -c
+            - |
+              set -eu
+
+              ENV_NAME="$(cat environment-name-dir/name)"
+
+              git clone pool-repo updated-pool-repo-dir/repo
+
+              pushd updated-pool-repo-dir/repo
+                git config user.name "$GIT_COMMIT_USERNAME"
+                git config user.email "$GIT_COMMIT_EMAIL"
+
+                touch "${POOL_NAME}/pending/${ENV_NAME}"
+
+                git add "${POOL_NAME}/pending/${ENV_NAME}"
+                git commit -m "Pend broken environment ${ENV_NAME}"
+              popd
+      - put: broken-pool-repo
+        params:
+          repository: updated-pool-repo-dir/repo
 
 - name: bump-beta
   plan:
