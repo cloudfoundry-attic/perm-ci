@@ -35,6 +35,7 @@ function store_config() {
   "apps_domain": "${SYSTEM_DOMAIN}",
   "admin_user": "${ADMIN_USERNAME}",
   "admin_password": "${ADMIN_PASSWORD}",
+  "backend": "diego",
   "skip_ssl_validation": true,
   "use_http": false,
   "include_apps": true,
