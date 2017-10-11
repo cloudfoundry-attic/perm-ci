@@ -1,6 +1,8 @@
 jobs:
 - name: destroy-bosh-lites
   plan:
+  - get: broken-pool
+    trigger: true
   - aggregate:
     - get: bosh-deployment
     - put: broken-pool
