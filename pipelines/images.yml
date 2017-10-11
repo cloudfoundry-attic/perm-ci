@@ -56,11 +56,26 @@ resources:
     regexp: perm-(\d+\.\d+\.\d+-alpha\.\d+).tgz
     json_key: ((gcp.json_key))
 
+- name: perm-beta
+  type: gcs
+  source:
+    bucket: perm-binaries
+    regexp: perm-(\d+\.\d+\.\d+-beta\.\d+).tgz
+    json_key: ((gcp.json_key))
+
 - name: perm-image-alpha
   type: docker-image
   source:
     repository: cfperm/perm
     tag: alpha
+    username: ((dockerhub.username))
+    password: ((dockerhub.password))
+
+- name: perm-image-beta
+  type: docker-image
+  source:
+    repository: cfperm/perm
+    tag: beta
     username: ((dockerhub.username))
     password: ((dockerhub.password))
 
@@ -85,6 +100,20 @@ jobs:
   - task: create-perm-image-workspace
     file: perm-ci/tasks/create-perm-image-workspace/task.yml
   - put: perm-image-alpha
+    params:
+      build: perm-image-workspace
+
+- name: build-perm-image-beta
+  plan:
+  - aggregate:
+    - get: perm-bin-dir
+      resource: perm-beta
+      trigger: true
+    - get: perm-image-src
+    - get: perm-ci
+  - task: create-perm-image-workspace
+    file: perm-ci/tasks/create-perm-image-workspace/task.yml
+  - put: perm-image-beta
     params:
       build: perm-image-workspace
 

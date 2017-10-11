@@ -27,11 +27,27 @@ resources:
     key: alpha-version
     access_key_id: ((gcp.access_key_id))
     secret_access_key: ((gcp.secret_access_key))
+- name: beta
+  type: semver
+  source:
+    driver: s3
+    endpoint: storage.googleapis.com
+    initial_version: 0.0.1
+    bucket: perm-releases
+    key: beta-version
+    access_key_id: ((gcp.access_key_id))
+    secret_access_key: ((gcp.secret_access_key))
 - name: binary-alpha
   type: gcs
   source:
     bucket: perm-binaries
     regexp: perm-(\d+\.\d+\.\d+-alpha\.\d+).tgz
+    json_key: ((gcp.json_key))
+- name: binary-beta
+  type: gcs
+  source:
+    bucket: perm-binaries
+    regexp: perm-(\d+\.\d+\.\d+-beta\.\d+).tgz
     json_key: ((gcp.json_key))
 - name: bosh-deployment
   type: git
@@ -132,6 +148,12 @@ resources:
   type: gcs
   source:
     bucket: perm-alphas
+    regexp: perm-release-(.*).tgz
+    json_key: ((gcp.json_key))
+- name: release-beta
+  type: gcs
+  source:
+    bucket: perm-releases
     regexp: perm-release-(.*).tgz
     json_key: ((gcp.json_key))
 - name: terraform
@@ -685,6 +707,71 @@ jobs:
   - put: broken-pool
     params:
       add: lock-dir
+
+- name: bump-beta
+  plan:
+  - aggregate:
+    - get: alpha
+      trigger: true
+      passed:
+      - test-cf
+    - get: beta
+      params:
+        pre: beta
+    - get: capi-release
+      resource: capi-release-develop
+      passed:
+      - test-cf
+    - get: perm
+      passed:
+      - test-cf
+    - get: perm-release
+      passed:
+      - test-cf
+  - put: beta
+    params:
+      file: beta/version
+
+- name: create-beta
+  plan:
+  - aggregate:
+    - get: alpha
+      passed:
+      - bump-beta
+    - get: beta
+      trigger: true
+      passed:
+      - bump-beta
+    - get: perm
+      passed:
+      - bump-beta
+    - get: perm-ci
+    - get: perm-release
+      passed:
+      - bump-beta
+  - aggregate:
+    - task: build-perm-binary
+      file: perm-ci/tasks/build-binary/task.yml
+      input_mapping:
+        release: perm-release
+      output_mapping:
+        bin-dir: perm-bin-dir
+      params:
+        PACKAGE_PATH: code.cloudfoundry.org/perm/cmd/perm
+        BINARY_NAME: perm
+    - task: create-release
+      file: perm-ci/tasks/create-release/task.yml
+      input_mapping:
+        release: perm-release
+      params:
+        RELEASE_NAME: perm
+        TARBALL_NAME: perm-release
+  - put: release-beta
+    params:
+      file: release-output/perm-*.tgz
+  - put: binary-beta
+    params:
+      file: perm-bin-dir/perm-*.tgz
 
 - name: deliver-stories
   plan:
