@@ -1,3 +1,42 @@
+resource_types:
+- name: terraform
+  type: docker-image
+  source:
+    repository: ljfranklin/terraform-resource
+
+resources:
+- name: bosh-deployment
+  type: git
+  source:
+    branch: master
+    uri: git@github.com:cloudfoundry/bosh-deployment.git
+    private_key: ((github.private_key))
+
+- name: broken-pool
+  type: pool
+  source:
+    uri: ((broken_pool_repo_uri))
+    branch: master
+    private_key: ((github.private_key))
+    pool: bosh-lites-broken
+
+- name: capi-ci
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/capi-ci
+    branch: master
+    private_key: ((github.private_key))
+
+- name: terraform
+  type: terraform
+  source:
+    storage:
+      endpoint: storage.googleapis.com
+      bucket: ((terraform.bucket))
+      bucket_path: bosh-lite/
+      access_key_id: ((gcp.access_key_id))
+      secret_access_key: ((gcp.secret_access_key))
+
 jobs:
 - name: destroy-bosh-lites
   plan:
@@ -46,42 +85,3 @@ jobs:
   - put: broken-pool
     params:
       remove: broken-pool/
-
-resources:
-- name: bosh-deployment
-  type: git
-  source:
-    branch: master
-    uri: git@github.com:cloudfoundry/bosh-deployment.git
-    private_key: ((github.private_key))
-
-- name: broken-pool
-  type: pool
-  source:
-    uri: ((broken_pool_repo_uri))
-    branch: master
-    private_key: ((github.private_key))
-    pool: bosh-lites-broken
-
-- name: capi-ci
-  type: git
-  source:
-    uri: git@github.com:cloudfoundry/capi-ci
-    branch: master
-    private_key: ((github.private_key))
-
-- name: terraform
-  type: terraform
-  source:
-    storage:
-      endpoint: storage.googleapis.com
-      bucket: ((terraform.bucket))
-      bucket_path: bosh-lite/
-      access_key_id: ((gcp.access_key_id))
-      secret_access_key: ((gcp.secret_access_key))
-
-resource_types:
-- name: terraform
-  type: docker-image
-  source:
-    repository: ljfranklin/terraform-resource
