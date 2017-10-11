@@ -52,8 +52,8 @@ resources:
 - name: perm-alpha
   type: gcs
   source:
-    bucket: perm-alphas
-    regexp: perm-(\d+\.\d+\.\d+.*).tgz
+    bucket: perm-binaries
+    regexp: perm-(\d+\.\d+\.\d+-alpha\.\d+).tgz
     json_key: ((gcp.json_key))
 
 - name: perm-image-alpha

@@ -20,8 +20,8 @@ resources:
 - name: binary-alpha
   type: gcs
   source:
-    bucket: perm-alphas
-    regexp: perm-(\d+\.\d+\.\d+.*).tgz
+    bucket: perm-binaries
+    regexp: perm-(\d+\.\d+\.\d+-alpha\.\d+).tgz
     json_key: ((gcp.json_key))
 - name: bosh-deployment
   type: git
@@ -143,9 +143,9 @@ resources:
   source:
     driver: s3
     endpoint: storage.googleapis.com
-    initial_version: 0.0.0
+    initial_version: 0.0.1
     bucket: perm-releases
-    key: version
+    key: alpha-version
     access_key_id: ((gcp.access_key_id))
     secret_access_key: ((gcp.secret_access_key))
 
