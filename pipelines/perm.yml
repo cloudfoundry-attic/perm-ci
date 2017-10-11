@@ -383,49 +383,11 @@ jobs:
       input_mapping:
         repo: cloud_controller_ng
   - task: create-capi-pr-release
+    file: perm-ci/tasks/create-capi-pr-release/task.yml
     input_mapping:
       release-dir: updated-capi-release-dir
     params:
       RELEASE_NAME: capi
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: cloudfoundry/capi
-          tag: runtime-ci
-      inputs:
-      - name: branch-dir
-      - name: perm-ci
-      - name: release-dir
-      - name: version
-      outputs:
-      - name: release-output
-      params:
-        RELEASE_NAME:
-      run:
-        path: bash
-        args:
-        - -c
-        - |
-          set -eux
-
-          set +u
-          # shellcheck source=/dev/null
-          source /usr/local/share/chruby/chruby.sh
-          chruby 2.4.2
-          set -u
-
-          BRANCH="$(cat branch-dir/branch)"
-          BRANCH_NAME="$(echo "${BRANCH}" | cut -d / -f 2)"
-          TASKS_DIR="${PWD}/perm-ci"
-          TIMESTAMP="$(date +%s)"
-
-          export SYNC_BLOBS="true"
-          export TARBALL_NAME="${RELEASE_NAME}-release-${TIMESTAMP}-${BRANCH_NAME}-for-perm"
-
-          mv release-dir/parent-repo release
-          "${TASKS_DIR}/tasks/create-release/task.sh"
   - put: capi-release-alpha-pr
     params:
       file: release-output/capi-release-*.tgz
@@ -651,26 +613,10 @@ jobs:
     file: perm-ci/tasks/write-cats-config/task.yml
     output_mapping:
       cats-config-dir: integration-config
-  - task: create-lock
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: alpine
-      inputs:
-      - name: terraform
-      outputs:
-      - name: lock-dir
-      run:
-        path: sh
-        args:
-        - -c
-        - |
-          set -eu
-
-          cp terraform/name lock-dir/name
-          touch lock-dir/metadata
+  - task: create-empty-lock
+    file: perm-ci/create-empty-lock/task.yml
+    input_mapping:
+      name-dir: terraform
   - task: run-cats
     file: cats-concourse-task/task.yml
     params:
@@ -720,27 +666,10 @@ jobs:
     output_mapping:
       destination-directory: environment-directory
     params: *gcp-environment-params
-  - task: create-lock
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: alpine
-      inputs:
-      - name: terraform
-      outputs:
-      - name: lock-dir
-      run:
-        path: sh
-        args:
-        - -c
-        - |
-          set -eu
-
-          cp terraform/name lock-dir/name
-          touch lock-dir/metadata
-    params: *gcp-environment-params
+  - task: create-empty-lock
+    file: perm-ci/create-empty-lock/task.yml
+    input_mapping:
+      name-dir: terraform
   - task: write-cats-config
     file: perm-ci/tasks/write-cats-config/task.yml
     output_mapping:

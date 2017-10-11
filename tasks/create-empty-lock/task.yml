@@ -1,0 +1,16 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: alpine
+
+inputs:
+- name: name-dir
+- name: perm-ci
+
+outputs:
+- name: lock-dir
+
+run:
+  path: perm-ci/tasks/create-empty-lock/task.sh
