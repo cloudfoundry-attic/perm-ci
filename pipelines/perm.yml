@@ -435,72 +435,73 @@ jobs:
       trigger: true
       passed:
       - create-capi-alpha
-  - put: terraform
-    params:
-      generate_random_name: true
-      delete_on_failure: true
-      terraform_source: capi-ci/terraform/bosh-lite
-      vars: &test_cf_terraform_vars
-        project_id: ((gcp.project_id))
-        json_key: ((gcp.json_key))
-        dns_project_id: ((gcp.project_id))
-        dns_json_key: ((gcp.json_key))
-        system_domain_suffix: ((terraform.system_domain_suffix))
-        dns_zone_name: ((terraform.dns_zone_name))
-        region: ((gcp.region))
-        zone: ((gcp.zone))
-  - do:
-    - task: create-bosh-lite
-      file: capi-ci/ci/bosh-lite/create-bosh-lite.yml
+  - do: &deploy-cf
+    - put: terraform
       params:
-        GCP_JSON_KEY: ((gcp.json_key))
-    - do:
-      - task: create-env-vars-file
-        file: capi-ci/ci/bosh-lite/create-env-vars-file.yml
-      - task: upload-cf-assets
-        file: capi-ci/ci/bosh-lite/upload-cf-assets.yml
-      - task: write-bosh-target-file
-        file: capi-ci/ci/bosh-lite/write-bosh-target-file.yml
-      - put: cf-deploy
-        params:
-          source_file: bosh-target/target.yml
-          manifest: cf-deployment/cf-deployment.yml
-          releases:
-          - release-alpha/*.tgz
-          - capi-release-alpha/*.tgz
-          vars_files:
-          - bosh-target/vars.yml
-          ops_files:
-          - capi-ci/cf-deployment-operations/skip-cert-verify.yml
-          - capi-ci/cf-deployment-operations/use-latest-stemcell.yml
-          - cf-deployment/operations/bosh-lite.yml
-          - cf-deployment/operations/use-compiled-releases.yml
-          - perm-ci/cf-deployment-operations/add-bpm.yml
-          - perm-ci/cf-deployment-operations/add-perm.yml
-          - perm-ci/cf-deployment-operations/add-perm-monitor-api-sidecar.yml
-          - capi-ci/cf-deployment-operations/use-latest-capi.yml
-      - task: upload-to-gcs
-        file: capi-ci/ci/gcs/upload-to-gcs.yml
-        input_mapping:
-          environment: terraform
-          source-directory: director-state
-        params: &gcp-environment-params
-          GCP_JSON_KEY: ((gcp.json_key))
-          GCP_BUCKET: ((terraform.bucket))
-          GCP_PATH: director-state
-          USE_ENV_NAMED_SUBDIR: true
-      on_failure:
-        task: delete-bosh-lite
-        file: capi-ci/ci/bosh-lite/delete-bosh-lite.yml
-    on_failure:
-      put: terraform
-      params:
-        action: destroy
-        env_name_file: terraform/name
+        generate_random_name: true
+        delete_on_failure: true
         terraform_source: capi-ci/terraform/bosh-lite
-        vars: *test_cf_terraform_vars
-      get_params:
-        action: destroy
+        vars: &test_cf_terraform_vars
+          project_id: ((gcp.project_id))
+          json_key: ((gcp.json_key))
+          dns_project_id: ((gcp.project_id))
+          dns_json_key: ((gcp.json_key))
+          system_domain_suffix: ((terraform.system_domain_suffix))
+          dns_zone_name: ((terraform.dns_zone_name))
+          region: ((gcp.region))
+          zone: ((gcp.zone))
+    - do:
+      - task: create-bosh-lite
+        file: capi-ci/ci/bosh-lite/create-bosh-lite.yml
+        params:
+          GCP_JSON_KEY: ((gcp.json_key))
+      - do:
+        - task: create-env-vars-file
+          file: capi-ci/ci/bosh-lite/create-env-vars-file.yml
+        - task: upload-cf-assets
+          file: capi-ci/ci/bosh-lite/upload-cf-assets.yml
+        - task: write-bosh-target-file
+          file: capi-ci/ci/bosh-lite/write-bosh-target-file.yml
+        - put: cf-deploy
+          params:
+            source_file: bosh-target/target.yml
+            manifest: cf-deployment/cf-deployment.yml
+            releases:
+            - release-alpha/*.tgz
+            - capi-release-alpha/*.tgz
+            vars_files:
+            - bosh-target/vars.yml
+            ops_files:
+            - capi-ci/cf-deployment-operations/skip-cert-verify.yml
+            - capi-ci/cf-deployment-operations/use-latest-stemcell.yml
+            - cf-deployment/operations/bosh-lite.yml
+            - cf-deployment/operations/use-compiled-releases.yml
+            - perm-ci/cf-deployment-operations/add-bpm.yml
+            - perm-ci/cf-deployment-operations/add-perm.yml
+            - perm-ci/cf-deployment-operations/add-perm-monitor-api-sidecar.yml
+            - capi-ci/cf-deployment-operations/use-latest-capi.yml
+        - task: upload-to-gcs
+          file: capi-ci/ci/gcs/upload-to-gcs.yml
+          input_mapping:
+            environment: terraform
+            source-directory: director-state
+          params: &gcp-environment-params
+            GCP_JSON_KEY: ((gcp.json_key))
+            GCP_BUCKET: ((terraform.bucket))
+            GCP_PATH: director-state
+            USE_ENV_NAMED_SUBDIR: true
+        on_failure:
+          task: delete-bosh-lite
+          file: capi-ci/ci/bosh-lite/delete-bosh-lite.yml
+      on_failure:
+        put: terraform
+        params:
+          action: destroy
+          env_name_file: terraform/name
+          terraform_source: capi-ci/terraform/bosh-lite
+          vars: *test_cf_terraform_vars
+        get_params:
+          action: destroy
 
 - name: deploy-cf-pr
   plan:
@@ -511,11 +512,16 @@ jobs:
       resource: capi-release-develop
       passed:
       - create-capi-alpha-pr
-    - get: capi-release-alpha-pr
+    - get: capi-release-alpha
+      resource: capi-release-alpha-pr
       trigger: true
       passed:
       - create-capi-alpha-pr
     - get: cf-deployment
+    - get: cloud_controller_ng
+      resource: cloud_controller_ng-perm-prs
+      passed:
+      - create-capi-alpha-pr
     - get: perm
       passed:
       - create-capi-alpha-pr
@@ -529,60 +535,7 @@ jobs:
     - get: alpha
       passed:
       - create-capi-alpha-pr
-  - put: terraform
-    params:
-      generate_random_name: true
-      delete_on_failure: true
-      terraform_source: capi-ci/terraform/bosh-lite
-      vars: *test_cf_terraform_vars
-  - do:
-    - task: create-bosh-lite
-      file: capi-ci/ci/bosh-lite/create-bosh-lite.yml
-      params:
-        GCP_JSON_KEY: ((gcp.json_key))
-    - do:
-      - task: create-env-vars-file
-        file: capi-ci/ci/bosh-lite/create-env-vars-file.yml
-      - task: upload-cf-assets
-        file: capi-ci/ci/bosh-lite/upload-cf-assets.yml
-      - task: write-bosh-target-file
-        file: capi-ci/ci/bosh-lite/write-bosh-target-file.yml
-      - put: cf-deploy
-        params:
-          source_file: bosh-target/target.yml
-          manifest: cf-deployment/cf-deployment.yml
-          releases:
-          - release-alpha/*.tgz
-          - capi-release-alpha-pr/*.tgz
-          vars_files:
-          - bosh-target/vars.yml
-          ops_files:
-          - capi-ci/cf-deployment-operations/skip-cert-verify.yml
-          - capi-ci/cf-deployment-operations/use-latest-stemcell.yml
-          - cf-deployment/operations/bosh-lite.yml
-          - cf-deployment/operations/use-compiled-releases.yml
-          - perm-ci/cf-deployment-operations/add-bpm.yml
-          - perm-ci/cf-deployment-operations/add-perm.yml
-          - perm-ci/cf-deployment-operations/add-perm-monitor-api-sidecar.yml
-          - capi-ci/cf-deployment-operations/use-latest-capi.yml
-      - task: upload-to-gcs
-        file: capi-ci/ci/gcs/upload-to-gcs.yml
-        input_mapping:
-          environment: terraform
-          source-directory: director-state
-        params: *gcp-environment-params
-      on_failure:
-        task: delete-bosh-lite
-        file: capi-ci/ci/bosh-lite/delete-bosh-lite.yml
-    on_failure:
-      put: terraform
-      params:
-        action: destroy
-        env_name_file: terraform/name
-        terraform_source: capi-ci/terraform/bosh-lite
-        vars: *test_cf_terraform_vars
-      get_params:
-        action: destroy
+  - do: *deploy-cf
 
 - name: test-cf
   plan:
@@ -616,33 +569,34 @@ jobs:
     - get: alpha
       passed:
       - deploy-cf
-  - task: download-from-gcs
-    file: capi-ci/ci/gcs/download-from-gcs.yml
-    input_mapping:
-      environment: terraform
-    output_mapping:
-      destination-directory: environment-directory
-    params: *gcp-environment-params
-  - task: write-cats-config
-    file: perm-ci/tasks/write-cats-config/task.yml
-    output_mapping:
-      cats-config-dir: integration-config
-  - task: run-cats
-    file: cats-concourse-task/task.yml
-    params:
-      NODES: 4
-    ensure:
-      do:
-      - task: pend-broken-environment
-        file: perm-ci/tasks/pend-broken-environment/task.yml
-        params:
-          POOL_NAME: bosh-lites-broken
-        input_mapping:
-          environment-name-dir: terraform
-          pool-repo: broken-pool-repo
-      - put: broken-pool-repo
-        params:
-          repository: updated-pool-repo-dir/repo
+  - do: &test-cf
+    - task: download-from-gcs
+      file: capi-ci/ci/gcs/download-from-gcs.yml
+      input_mapping:
+        environment: terraform
+      output_mapping:
+        destination-directory: environment-directory
+      params: *gcp-environment-params
+    - task: write-cats-config
+      file: perm-ci/tasks/write-cats-config/task.yml
+      output_mapping:
+        cats-config-dir: integration-config
+    - task: run-cats
+      file: cats-concourse-task/task.yml
+      params:
+        NODES: 4
+      ensure:
+        do:
+        - task: pend-broken-environment
+          file: perm-ci/tasks/pend-broken-environment/task.yml
+          params:
+            POOL_NAME: bosh-lites-broken
+          input_mapping:
+            environment-name-dir: terraform
+            pool-repo: broken-pool-repo
+        - put: broken-pool-repo
+          params:
+            repository: updated-pool-repo-dir/repo
 
 - name: test-cf-pr
   plan:
@@ -658,6 +612,10 @@ jobs:
       - deploy-cf-pr
     - get: cats-concourse-task
     - get: cf-acceptance-tests
+    - get: cloud_controller_ng
+      resource: cloud_controller_ng-perm-prs
+      passed:
+      - deploy-cf-pr
     - get: perm
       passed:
       - deploy-cf-pr
@@ -674,33 +632,7 @@ jobs:
     - get: alpha
       passed:
       - deploy-cf-pr
-  - task: download-from-gcs
-    file: capi-ci/ci/gcs/download-from-gcs.yml
-    input_mapping:
-      environment: terraform
-    output_mapping:
-      destination-directory: environment-directory
-    params: *gcp-environment-params
-  - task: write-cats-config
-    file: perm-ci/tasks/write-cats-config/task.yml
-    output_mapping:
-      cats-config-dir: integration-config
-  - task: run-cats
-    file: cats-concourse-task/task.yml
-    params:
-      NODES: 4
-    ensure:
-      do:
-      - task: pend-broken-environment
-        file: perm-ci/tasks/pend-broken-environment/task.yml
-        params:
-          POOL_NAME: bosh-lites-broken
-        input_mapping:
-          environment-name-dir: terraform
-          pool-repo: broken-pool-repo
-      - put: broken-pool-repo
-        params:
-          repository: updated-pool-repo-dir/repo
+  - do: *test-cf
 
 - name: bump-beta
   plan:
