@@ -4,6 +4,11 @@ resource_types:
   source:
     repository: ljfranklin/terraform-resource
 
+- name: cron
+  type: docker-image
+  source:
+    repository: cftoolsmiths/cron-resource
+
 resources:
 - name: bosh-deployment
   type: git
@@ -27,6 +32,14 @@ resources:
     branch: master
     private_key: ((github.private_key))
 
+- name: pending-broken-pool
+  type: pool
+  source:
+    uri: ((broken_pool_repo_uri))
+    branch: master
+    private_key: ((github.private_key))
+    pool: bosh-lites-pending-broken
+
 - name: terraform
   type: terraform
   source:
@@ -37,7 +50,33 @@ resources:
       access_key_id: ((gcp.access_key_id))
       secret_access_key: ((gcp.secret_access_key))
 
+- name: break-bosh-lites-trigger
+  type: cron
+  source:
+    expression: 0 0 0/1 1/1 * ? *
+    location: America/Los_Angeles
+    fire_immediately: true
+
 jobs:
+- name: break-bosh-lites
+  plan:
+  - aggregate:
+    - get: break-bosh-lites-trigger
+      trigger: true
+    - get: pending-broken-pool
+      resource: pending-broken-pool
+      version: every
+  - put: broken-bosh-lite
+    resource: pending-broken-pool
+    params:
+      acquire: true
+  - put: broken-pool
+    params:
+      add: broken-bosh-lite
+  - put: pending-broken-pool
+    params:
+      remove: broken-bosh-lite
+
 - name: destroy-bosh-lites
   plan:
   - get: broken-pool

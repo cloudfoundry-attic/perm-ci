@@ -29,6 +29,13 @@ resources:
     branch: master
     uri: git@github.com:cloudfoundry/bosh-deployment.git
     private_key: ((github.private_key))
+- name: broken-pool
+  type: pool
+  source:
+    uri: ((broken_pool_repo_uri))
+    branch: master
+    private_key: ((github.private_key))
+    pool: bosh-lites-broken
 - name: capi-ci
   type: git
   source:
@@ -40,6 +47,12 @@ resources:
   source:
     bucket: perm-alphas
     regexp: capi-release-(\d+)-for-perm-.*.tgz
+    json_key: ((gcp.json_key))
+- name: capi-release-alpha-pr
+  type: gcs
+  source:
+    bucket: perm-alphas
+    regexp: capi-release-(\d+)-\w+-for-perm-.*.tgz
     json_key: ((gcp.json_key))
 - name: capi-release-develop
   type: git
@@ -74,6 +87,13 @@ resources:
     branches:
     - perm/*
     private_key: ((github.private_key))
+- name: pending-broken-pool
+  type: pool
+  source:
+    uri: ((broken_pool_repo_uri))
+    branch: master
+    private_key: ((github.private_key))
+    pool: bosh-lites-pending-broken
 - name: perm
   type: git
   source:
@@ -242,28 +262,6 @@ jobs:
   - task: test-ruby-client
     file: perm-ci/tasks/test-ruby-client/task.yml
 
-- name: test-capi-pr
-  plan:
-  - aggregate:
-    - get: capi-ci
-    - get: cloud_controller_ng
-      resource: cloud_controller_ng-perm-prs
-      trigger: true
-      version: every
-    - get: perm-bin-dir
-      resource: binary-alpha
-      passed:
-      - create-alpha
-    - get: perm-ci
-    - get: release-alpha
-      passed:
-      - create-alpha
-    - get: version
-      passed:
-      - create-alpha
-  - task: test-capi
-    file: perm-ci/tasks/test-capi/task.yml
-
 - name: test-capi
   plan:
   - aggregate:
@@ -294,6 +292,28 @@ jobs:
   - task: test-capi
     file: perm-ci/tasks/test-capi/task.yml
 
+- name: test-capi-pr
+  plan:
+  - aggregate:
+    - get: capi-ci
+    - get: cloud_controller_ng
+      resource: cloud_controller_ng-perm-prs
+      trigger: true
+      version: every
+    - get: perm-bin-dir
+      resource: binary-alpha
+      passed:
+      - create-alpha
+    - get: perm-ci
+    - get: release-alpha
+      passed:
+      - create-alpha
+    - get: version
+      passed:
+      - create-alpha
+  - task: test-capi
+    file: perm-ci/tasks/test-capi/task.yml
+
 - name: create-capi-alpha
   plan:
   - aggregate:
@@ -321,6 +341,92 @@ jobs:
     params:
       RELEASE_NAME: capi
   - put: capi-release-alpha
+    params:
+      file: release-output/capi-release-*.tgz
+
+- name: create-capi-alpha-pr
+  plan:
+  - aggregate:
+    - get: capi-release
+      resource: capi-release-develop
+    - get: cloud_controller_ng
+      resource: cloud_controller_ng-perm-prs
+      trigger: true
+      version: every
+    - get: perm
+      passed:
+      - create-alpha
+    - get: perm-ci
+    - get: perm-release
+      passed:
+      - create-alpha
+    - get: release-alpha
+      passed:
+      - create-alpha
+    - get: version
+      trigger: true
+      passed:
+      - create-alpha
+  - aggregate:
+    - task: bump-submodule
+      file: perm-ci/tasks/bump-submodule/task.yml
+      input_mapping:
+        parent-repo: capi-release
+        submodule-repo: cloud_controller_ng
+      output_mapping:
+        updated-parent-repo: updated-capi-release-dir
+      params:
+        SUBMODULE_PATH: src/cloud_controller_ng
+        SUBMODULE_NAME: cloud_controller_ng
+    - task: get-branch-name
+      file: perm-ci/tasks/get-branch-name/task.yml
+      input_mapping:
+        repo: cloud_controller_ng
+  - task: create-capi-pr-release
+    input_mapping:
+      release-dir: updated-capi-release-dir
+    params:
+      RELEASE_NAME: capi
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: cloudfoundry/capi
+          tag: runtime-ci
+      inputs:
+      - name: branch-dir
+      - name: perm-ci
+      - name: release-dir
+      - name: version
+      outputs:
+      - name: release-output
+      params:
+        RELEASE_NAME:
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          set -eux
+
+          set +u
+          # shellcheck source=/dev/null
+          source /usr/local/share/chruby/chruby.sh
+          chruby 2.4.2
+          set -u
+
+          BRANCH="$(cat branch-dir/branch)"
+          BRANCH_NAME="$(echo "${BRANCH}" | cut -d / -f 2)"
+          TASKS_DIR="${PWD}/perm-ci"
+          TIMESTAMP="$(date +%s)"
+
+          export SYNC_BLOBS="true"
+          export TARBALL_NAME="${RELEASE_NAME}-release-${TIMESTAMP}-${BRANCH_NAME}-for-perm"
+
+          mv release-dir/parent-repo release
+          "${TASKS_DIR}/tasks/create-release/task.sh"
+  - put: capi-release-alpha-pr
     params:
       file: release-output/capi-release-*.tgz
 
@@ -420,6 +526,88 @@ jobs:
       get_params:
         action: destroy
 
+- name: deploy-cf-pr
+  plan:
+  - aggregate:
+    - get: bosh-deployment
+    - get: capi-ci
+    - get: capi-release
+      resource: capi-release-develop
+      passed:
+      - create-capi-alpha-pr
+    - get: capi-release-alpha-pr
+      trigger: true
+      passed:
+      - create-capi-alpha-pr
+    - get: cf-deployment
+    - get: perm
+      passed:
+      - create-capi-alpha-pr
+    - get: perm-ci
+    - get: perm-release
+      passed:
+      - create-capi-alpha-pr
+    - get: release-alpha
+      passed:
+      - create-capi-alpha-pr
+    - get: version
+      passed:
+      - create-capi-alpha-pr
+  - put: terraform
+    params:
+      generate_random_name: true
+      delete_on_failure: true
+      terraform_source: capi-ci/terraform/bosh-lite
+      vars: *test_cf_terraform_vars
+  - do:
+    - task: create-bosh-lite
+      file: capi-ci/ci/bosh-lite/create-bosh-lite.yml
+      params:
+        GCP_JSON_KEY: ((gcp.json_key))
+    - do:
+      - task: create-env-vars-file
+        file: capi-ci/ci/bosh-lite/create-env-vars-file.yml
+      - task: upload-cf-assets
+        file: capi-ci/ci/bosh-lite/upload-cf-assets.yml
+      - task: write-bosh-target-file
+        file: capi-ci/ci/bosh-lite/write-bosh-target-file.yml
+      - put: cf-deploy
+        params:
+          source_file: bosh-target/target.yml
+          manifest: cf-deployment/cf-deployment.yml
+          releases:
+          - release-alpha/*.tgz
+          - capi-release-alpha-pr/*.tgz
+          vars_files:
+          - bosh-target/vars.yml
+          ops_files:
+          - capi-ci/cf-deployment-operations/skip-cert-verify.yml
+          - capi-ci/cf-deployment-operations/use-latest-stemcell.yml
+          - cf-deployment/operations/bosh-lite.yml
+          - cf-deployment/operations/use-compiled-releases.yml
+          - perm-ci/cf-deployment-operations/add-bpm.yml
+          - perm-ci/cf-deployment-operations/add-perm.yml
+          - perm-ci/cf-deployment-operations/add-perm-monitor-api-sidecar.yml
+          - capi-ci/cf-deployment-operations/use-latest-capi.yml
+      - task: upload-to-gcs
+        file: capi-ci/ci/gcs/upload-to-gcs.yml
+        input_mapping:
+          environment: terraform
+          source-directory: director-state
+        params: *gcp-environment-params
+      on_failure:
+        task: delete-bosh-lite
+        file: capi-ci/ci/bosh-lite/delete-bosh-lite.yml
+    on_failure:
+      put: terraform
+      params:
+        action: destroy
+        env_name_file: terraform/name
+        terraform_source: capi-ci/terraform/bosh-lite
+        vars: *test_cf_terraform_vars
+      get_params:
+        action: destroy
+
 - name: test-cf
   plan:
   - aggregate:
@@ -448,6 +636,7 @@ jobs:
     - get: terraform
       passed:
       - deploy-cf
+      trigger: true
     - get: version
       passed:
       - deploy-cf
@@ -462,14 +651,111 @@ jobs:
     file: perm-ci/tasks/write-cats-config/task.yml
     output_mapping:
       cats-config-dir: integration-config
+  - task: create-lock
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: alpine
+      inputs:
+      - name: terraform
+      outputs:
+      - name: lock-dir
+      run:
+        path: sh
+        args:
+        - -c
+        - |
+          set -eu
+
+          cp terraform/name lock-dir/name
+          touch lock-dir/metadata
   - task: run-cats
     file: cats-concourse-task/task.yml
-  - put: terraform
     params:
-      action: destroy
-      env_name_file: terraform/name
-      terraform_source: capi-ci/terraform/bosh-lite
-      vars: *test_cf_terraform_vars
+      NODES: 4
+    on_failure:
+      put: pending-broken-pool
+      params:
+        add: lock-dir
+  - put: broken-pool
+    params:
+      add: lock-dir
+
+- name: test-cf-pr
+  plan:
+  - aggregate:
+    - get: capi-ci
+    - get: capi-release
+      resource: capi-release-develop
+      passed:
+      - deploy-cf-pr
+    - get: capi-release-alpha-pr
+      trigger: true
+      passed:
+      - deploy-cf-pr
+    - get: cats-concourse-task
+    - get: cf-acceptance-tests
+    - get: perm
+      passed:
+      - deploy-cf-pr
+    - get: perm-ci
+    - get: perm-release
+      passed:
+      - deploy-cf-pr
+    - get: release-alpha
+      passed:
+      - deploy-cf-pr
+    - get: terraform
+      passed:
+      - deploy-cf-pr
+    - get: version
+      passed:
+      - deploy-cf-pr
+  - task: download-from-gcs
+    file: capi-ci/ci/gcs/download-from-gcs.yml
+    input_mapping:
+      environment: terraform
+    output_mapping:
+      destination-directory: environment-directory
+    params: *gcp-environment-params
+  - task: create-lock
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: alpine
+      inputs:
+      - name: terraform
+      outputs:
+      - name: lock-dir
+      run:
+        path: sh
+        args:
+        - -c
+        - |
+          set -eu
+
+          cp terraform/name lock-dir/name
+          touch lock-dir/metadata
+    params: *gcp-environment-params
+  - task: write-cats-config
+    file: perm-ci/tasks/write-cats-config/task.yml
+    output_mapping:
+      cats-config-dir: integration-config
+  - task: run-cats
+    file: cats-concourse-task/task.yml
+    params:
+      NODES: 4
+    on_failure:
+      put: pending-broken-pool
+      params:
+        add: lock-dir
+  - put: broken-pool
+    params:
+      add: lock-dir
 
 - name: deliver-stories
   plan:
