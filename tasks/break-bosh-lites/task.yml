@@ -1,0 +1,23 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: concourse/buildroot
+    tag: git
+
+inputs:
+- name: perm-ci
+- name: pool-repo
+
+outputs:
+- name: updated-pool-repo-dir
+
+params:
+  GIT_COMMIT_EMAIL: cf-permissions@pivotal.io
+  GIT_COMMIT_USERNAME: CI Bot
+  POOL_NAME:
+  TRIGGER_PATH:
+
+run:
+  path: perm-ci/tasks/break-bosh-lites/task.sh
