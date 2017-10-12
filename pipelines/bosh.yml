@@ -55,6 +55,13 @@ resources:
     branch: master
     private_key: ((github.private_key))
 
+- name: perm-ci
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry-incubator/perm-ci
+    branch: master
+    private_key: ((github.private_key))
+
 - name: terraform
   type: terraform
   source:
@@ -88,6 +95,7 @@ jobs:
   plan:
   - get: broken-bosh-lites-trigger
     trigger: true
+    version: every
   - aggregate:
     - get: bosh-deployment
     - put: broken-pool
