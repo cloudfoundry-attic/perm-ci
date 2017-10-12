@@ -549,6 +549,7 @@ jobs:
 - name: test-cf
   plan:
   - aggregate:
+    - get: broken-pool-repo
     - get: capi-ci
     - get: capi-release
       resource: capi-release-develop
@@ -611,6 +612,7 @@ jobs:
 - name: test-cf-pr
   plan:
   - aggregate:
+    - get: broken-pool-repo
     - get: capi-ci
     - get: capi-release
       resource: capi-release-develop
