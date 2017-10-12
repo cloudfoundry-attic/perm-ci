@@ -211,7 +211,7 @@ jobs:
         pre: alpha
   - put: alpha
     params:
-      file: alpha/version
+      file: version/version
 
 - name: create-alpha
   plan:
@@ -652,11 +652,6 @@ jobs:
 - name: bump-beta
   plan:
   - aggregate:
-    - get: version
-      resource: alpha
-      trigger: true
-      passed:
-      - test-cf
     - get: beta
       params:
         pre: beta
@@ -668,6 +663,11 @@ jobs:
       passed:
       - test-cf
     - get: perm-release
+      passed:
+      - test-cf
+    - get: version
+      resource: alpha
+      trigger: true
       passed:
       - test-cf
   - put: beta
