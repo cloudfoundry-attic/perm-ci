@@ -205,7 +205,8 @@ jobs:
       - bump-submodule
     - get: perm-release
       trigger: true
-    - get: alpha
+    - get: version
+      resource: alpha
       params:
         pre: alpha
   - put: alpha
@@ -222,7 +223,8 @@ jobs:
     - get: perm-release
       passed:
       - bump-alpha
-    - get: alpha
+    - get: version
+      resource: alpha
       trigger: true
       passed:
       - bump-alpha
@@ -269,7 +271,8 @@ jobs:
     - get: release-alpha
       passed:
       - create-alpha
-    - get: alpha
+    - get: version
+      resource: alpha
       passed:
       - create-alpha
       trigger: true
@@ -291,7 +294,8 @@ jobs:
     - get: release-alpha
       passed:
       - create-alpha
-    - get: alpha
+    - get: version
+      resource: alpha
       passed:
       - create-alpha
       trigger: true
@@ -322,7 +326,8 @@ jobs:
     - get: release-alpha
       passed:
       - create-alpha
-    - get: alpha
+    - get: version
+      resource: alpha
       passed:
       - create-alpha
   - task: test-capi
@@ -344,7 +349,8 @@ jobs:
     - get: release-alpha
       passed:
       - create-alpha
-    - get: alpha
+    - get: version
+      resource: alpha
       trigger: true
       passed:
       - create-alpha
@@ -377,7 +383,8 @@ jobs:
     - get: release-alpha
       passed:
       - create-alpha
-    - get: alpha
+    - get: version
+      resource: alpha
       trigger: true
       passed:
       - create-alpha
@@ -431,7 +438,8 @@ jobs:
       trigger: true
       passed:
       - create-capi-alpha
-    - get: alpha
+    - get: version
+      resource: alpha
       trigger: true
       passed:
       - create-capi-alpha
@@ -532,7 +540,8 @@ jobs:
     - get: release-alpha
       passed:
       - create-capi-alpha-pr
-    - get: alpha
+    - get: version
+      resource: alpha
       passed:
       - create-capi-alpha-pr
   - do: *deploy-cf
@@ -566,7 +575,8 @@ jobs:
       passed:
       - deploy-cf
       trigger: true
-    - get: alpha
+    - get: version
+      resource: alpha
       passed:
       - deploy-cf
   - do: &test-cf
@@ -629,7 +639,8 @@ jobs:
     - get: terraform
       passed:
       - deploy-cf-pr
-    - get: alpha
+    - get: version
+      resource: alpha
       passed:
       - deploy-cf-pr
   - do: *test-cf
@@ -637,7 +648,8 @@ jobs:
 - name: bump-beta
   plan:
   - aggregate:
-    - get: alpha
+    - get: version
+      resource: alpha
       trigger: true
       passed:
       - test-cf
@@ -664,15 +676,16 @@ jobs:
     - get: alpha
       passed:
       - bump-beta
-    - get: beta
-      trigger: true
-      passed:
-      - bump-beta
     - get: perm
       passed:
       - bump-beta
     - get: perm-ci
     - get: perm-release
+      passed:
+      - bump-beta
+    - get: version
+      resource: beta
+      trigger: true
       passed:
       - bump-beta
   - aggregate:
@@ -720,7 +733,8 @@ jobs:
     - get: release-alpha
       passed:
       - test-cf
-    - get: alpha
+    - get: version
+      resource: alpha
       trigger: true
       passed:
       - test-cf
