@@ -573,6 +573,7 @@ jobs:
       passed:
       - deploy-cf
     - get: terraform
+      trigger: true
       passed:
       - deploy-cf
       trigger: true
@@ -595,7 +596,7 @@ jobs:
     - task: run-cats
       file: cats-concourse-task/task.yml
       params:
-        NODES: 4
+        NODES: 8
       ensure:
         do:
         - task: pend-broken-environment
@@ -641,6 +642,7 @@ jobs:
     - get: terraform
       passed:
       - deploy-cf-pr
+      trigger: true
     - get: version
       resource: alpha
       passed:
