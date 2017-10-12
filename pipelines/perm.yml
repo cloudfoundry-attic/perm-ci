@@ -385,7 +385,6 @@ jobs:
       - create-alpha
     - get: version
       resource: alpha
-      trigger: true
       passed:
       - create-alpha
   - aggregate:
