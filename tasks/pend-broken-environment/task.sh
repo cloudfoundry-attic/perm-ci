@@ -13,5 +13,9 @@ pushd updated-pool-repo-dir/repo
   touch "${POOL_NAME}/pending/${ENV_NAME}"
 
   git add "${POOL_NAME}/pending/${ENV_NAME}"
-  git commit -m "Pend broken environment ${ENV_NAME}"
+
+  # Check if there really are changes before committing
+  if ! git diff-index --quiet HEAD --; then
+    git commit -m "Pend broken environment ${ENV_NAME}"
+  fi
 popd
