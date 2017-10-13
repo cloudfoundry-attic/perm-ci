@@ -1,3 +1,4 @@
+# Perm instance group
 - type: replace
   path: /instance_groups/-
   value:
@@ -14,6 +15,14 @@
       properties:
         log_level: debug
         tls: ((perm/tls))
+        sql:
+          db:
+            driver: mysql
+            username: perm
+            password: ((perm/database_password))
+            schema: perm
+            host: sql-db.service.cf.internal
+            port: 3306
     - name: bpm
       release: bpm
       properties: {}
@@ -30,18 +39,33 @@
               perm:
                 name: perm
 
+# Changes to other instance groups
+- type: replace
+  path: /instance_groups/name=mysql?/jobs/name=mysql/properties/cf_mysql/mysql/seeded_databases/-
+  value:
+    name: perm
+    password: ((perm/database_password))
+    username: perm
+
 - type: replace
   path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties?/perm
   value:
     ca_certs:
     - ((perm/tls.ca))
 
+
+- type: replace
+  path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/perm?/enabled
+  value: true
+
+# Changes to releases
 - type: replace
   path: /releases/-
   value:
     name: perm
     version: ((perm_version))
 
+# Changes to variables
 - type: replace
   path: /variables/-
   value:
@@ -64,5 +88,7 @@
       - server_auth
 
 - type: replace
-  path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/perm?/enabled
-  value: true
+  path: /variables/-
+  value:
+    name: perm/database_password
+    type: password
