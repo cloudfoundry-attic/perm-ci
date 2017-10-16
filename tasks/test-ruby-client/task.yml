@@ -3,8 +3,8 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: ruby
-    tag: 2.4.2
+    repository: cloudfoundry/capi
+    tag: ruby-units
 
 run:
   path: perm-ci/tasks/test-ruby-client/task.sh
@@ -15,3 +15,10 @@ inputs:
 - name: perm-rb
 - name: perm-ci
 - name: version
+
+params:
+  PERM_TEST_SQL_DB_USERNAME: root
+  PERM_TEST_SQL_DB_PASSWORD: password
+  # ruby-mysql expects the socket to be at /tmp/mysql.sock
+  # but this image puts it in /var/run/mysqld/mysqld.sock
+  PERM_TEST_SQL_DB_SOCKET: /var/run/mysqld/mysqld.sock
