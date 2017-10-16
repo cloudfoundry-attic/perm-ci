@@ -608,6 +608,7 @@ jobs:
         - put: broken-pool-repo
           params:
             repository: updated-pool-repo-dir/repo
+            rebase: true
 
 - name: test-cf-pr
   plan:
