@@ -13,4 +13,10 @@ tar -zxf "./perm-bin-dir/perm-${VERSION}.tgz" -C /usr/local/bin
 find /var/lib/mysql/mysql -exec touch -c -a {} +
 service mysql restart
 
+db[0]="postgres"
+db[1]="mysql"
+
+rand=$((RANDOM % 2))
+export DB="${db[$rand]}"
+
 CF_RUN_PERM_SPECS=true ./capi-ci/ci/test-unit/run_cc_unit_tests
