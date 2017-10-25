@@ -529,6 +529,7 @@ jobs:
   plan:
   - aggregate:
     - get: bosh-deployment
+    - get: broken-pool-repo
     - get: capi-ci
     - get: capi-release
       resource: capi-release-develop
