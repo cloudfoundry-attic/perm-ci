@@ -5,6 +5,8 @@ set -eu
 export GOPATH="${PWD}/gopath"
 export PATH="${GOPATH}/bin:${PATH}"
 
+service mysql restart
+
 cd "${GOPATH}/src/code.cloudfoundry.org/perm"
 go install code.cloudfoundry.org/perm/vendor/github.com/onsi/ginkgo/ginkgo
 
