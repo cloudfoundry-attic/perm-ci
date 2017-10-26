@@ -1,4 +1,4 @@
-FROM cfperm/perm-base
+FROM cfperm/perm-requirements:base
 
 # Adapted from bosh's CI:
 # https://github.com/cloudfoundry/bosh/blob/master/ci/docker/main-mysql/Dockerfile
