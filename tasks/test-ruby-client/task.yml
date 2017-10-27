@@ -3,8 +3,8 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: cloudfoundry/capi
-    tag: ruby-units
+    repository: cfperm/requirements
+    tag: capi
 
 run:
   path: perm-ci/tasks/test-ruby-client/task.sh
