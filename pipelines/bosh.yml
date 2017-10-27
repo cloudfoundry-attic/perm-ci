@@ -20,7 +20,7 @@ resources:
 - name: break-bosh-lites-trigger
   type: cron
   source:
-    expression: 0 0 0/1 1/1 * ? *
+    expression: 0 0 * * *
     location: America/Los_Angeles
     fire_immediately: true
 
