@@ -73,6 +73,23 @@ resources:
     username: ((dockerhub.username))
     password: ((dockerhub.password))
 
+- name: perm-requirements-src-capi
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry-incubator/perm-ci
+    private_key: ((github.private_key))
+    branch: master
+    paths:
+    - images/perm-requirements/capi/*
+
+- name: perm-requirements-image-capi
+  type: docker-image
+  source:
+    repository: cfperm/requirements
+    tag: capi
+    username: ((dockerhub.username))
+    password: ((dockerhub.password))
+
 - name: perm-requirements-src-mysql
   type: git
   source:
@@ -168,6 +185,15 @@ jobs:
   - put: perm-requirements-image-base
     params:
       build: perm-requirements-src-base/images/perm-requirements/base
+
+- name: build-perm-image-capi
+  plan:
+  - aggregate:
+    - get: perm-requirements-src-capi
+      trigger: true
+  - put: perm-requirements-image-capi
+    params:
+      build: perm-requirements-src-capi/images/perm-requirements/capi
 
 - name: build-perm-mysql-image
   plan:
