@@ -697,6 +697,10 @@ jobs:
     - get: alpha
       passed:
       - bump-beta
+    - get: capi-release
+      resource: capi-release-develop
+      passed:
+      - bump-beta
     - get: perm
       passed:
       - bump-beta
