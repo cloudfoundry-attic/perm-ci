@@ -465,6 +465,8 @@ jobs:
           GCP_JSON_KEY: ((gcp.json_key))
         on_failure:
           put: terraform
+          get_params:
+            action: destroy
           params:
             action: destroy
             env_name_file: terraform/name
