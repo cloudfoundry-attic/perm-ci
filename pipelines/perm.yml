@@ -446,23 +446,30 @@ jobs:
   - do: &deploy-cf
     - put: terraform
       params:
-        generate_random_name: true
         delete_on_failure: true
+        generate_random_name: true
         terraform_source: capi-ci/terraform/bosh-lite
         vars: &test_cf_terraform_vars
-          project_id: ((gcp.project_id))
-          json_key: ((gcp.json_key))
-          dns_project_id: ((gcp.project_id))
           dns_json_key: ((gcp.json_key))
-          system_domain_suffix: ((terraform.system_domain_suffix))
+          dns_project_id: ((gcp.project_id))
           dns_zone_name: ((terraform.dns_zone_name))
+          json_key: ((gcp.json_key))
+          project_id: ((gcp.project_id))
           region: ((gcp.region))
+          system_domain_suffix: ((terraform.system_domain_suffix))
           zone: ((gcp.zone))
     - do:
       - task: create-bosh-lite
         file: capi-ci/ci/bosh-lite/create-bosh-lite.yml
         params:
           GCP_JSON_KEY: ((gcp.json_key))
+        on_failure:
+          put: terraform
+          params:
+            action: destroy
+            env_name_file: terraform/name
+            terraform_source: capi-ci/terraform/bosh-lite
+            vars: *test_cf_terraform_vars
       - do:
         - task: create-env-vars-file
           file: capi-ci/ci/bosh-lite/create-env-vars-file.yml
