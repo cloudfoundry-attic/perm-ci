@@ -107,6 +107,23 @@ resources:
     username: ((dockerhub.username))
     password: ((dockerhub.password))
 
+- name: perm-requirements-src-mariadb
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry-incubator/perm-ci
+    private_key: ((github.private_key))
+    branch: master
+    paths:
+    - images/perm-requirements/mariadb/*
+
+- name: perm-requirements-image-mariadb
+  type: docker-image
+  source:
+    repository: cfperm/requirements
+    tag: mariadb
+    username: ((dockerhub.username))
+    password: ((dockerhub.password))
+
 - name: perm-alpha
   type: gcs
   source:
@@ -207,6 +224,19 @@ jobs:
   - put: perm-requirements-image-mysql
     params:
       build: perm-requirements-src-mysql/images/perm-requirements/mysql
+
+- name: build-perm-mariadb-image
+  plan:
+  - aggregate:
+    - get: perm-requirements-src-base
+      passed:
+      - build-perm-image-base
+      trigger: true
+    - get: perm-requirements-src-mariadb
+      trigger: true
+  - put: perm-requirements-image-mariadb
+    params:
+      build: perm-requirements-src-mariadb/images/perm-requirements/mariadb
 
 - name: build-bbl-cryptdo-image
   plan:
