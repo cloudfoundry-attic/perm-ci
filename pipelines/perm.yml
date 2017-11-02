@@ -170,8 +170,11 @@ jobs:
     - get: perm
       trigger: true
     - get: perm-ci
-  - task: test-server
-    file: perm-ci/tasks/test-server/task.yml
+  - aggregate:
+    - task: test-server-mysql
+      file: perm-ci/tasks/test-server/task-mysql.yml
+    - task: test-server-mariadb
+      file: perm-ci/tasks/test-server/task-mariadb.yml
 
 - name: bump-submodule
   plan:
