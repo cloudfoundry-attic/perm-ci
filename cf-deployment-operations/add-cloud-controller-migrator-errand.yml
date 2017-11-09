@@ -15,7 +15,8 @@
       properties:
         uaa:
           url: https://uaa.((system_domain))
-          ca_certs: ((router_ssl.ca))
+          ca_certs:
+          - ((router_ssl.ca))
 
         cloud_controller:
           url: https://api.((system_domain))
