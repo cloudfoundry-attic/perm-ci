@@ -522,6 +522,7 @@ jobs:
           - perm-ci/cf-deployment-operations/add-bpm.yml
           - perm-ci/cf-deployment-operations/add-perm.yml
           - perm-ci/cf-deployment-operations/add-perm-monitor-api-sidecar.yml
+          - perm-ci/cf-deployment-operations/add-cloud-controller-migrator-errand.yml
           - capi-ci/cf-deployment-operations/use-latest-capi.yml
         on_failure:
           do:
