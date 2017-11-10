@@ -3,10 +3,6 @@ resource_types:
   type: docker-image
   source:
     repository: cloudfoundry/bosh-deployment-resource
-- name: bosh-errand
-  type: docker-image
-  source:
-    repository: starkandwayne/bosh2-errand-resource
 - name: gcs
   type: docker-image
   source:
@@ -109,15 +105,6 @@ resources:
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: ((github.private_key))
     branch: release-candidate
-- name: bosh-errand
-  type: bosh-errand
-  source:
-    # Overridden by source_file in the tasks
-    deployment: DONOTUSE
-    target: DONOTUSE
-    client: DONOTUSE
-    client_secret: DONOTUSE
-
 - name: cloud_controller_ng-perm-prs
   type: git-branch-heads
   source:
@@ -627,15 +614,13 @@ jobs:
       output_mapping:
         destination-directory: environment-directory
       params: *gcp-environment-params
-    - task: write-errand-source-file
-      file: perm-ci/tasks/write-errands-source-file/task.yml
-    - put: bosh-errand
+    - task: run-bosh-errand
+      file: perm-ci/tasks/run-bosh-errand/task.sh
       params:
-        name: cloud-controller-migrator
-        source_file: errand-configuration-directory/config.json
+        BOSH_DEPLOYMENT: cf
+        BOSH_ERRAND_NAME: cloud-controller-migrator
       on_failure:
         do: *pend-broken-environment
-
 
 - name: test-cf
   plan:

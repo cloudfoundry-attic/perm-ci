@@ -10,8 +10,10 @@ inputs:
 - name: perm-ci
 - name: terraform
 
-outputs:
-- name: errand-configuration-directory
-
 run:
-  path: perm-ci/tasks/write-errands-source-file/task.sh
+  path: perm-ci/tasks/run-bosh-errand/task.sh
+
+params:
+  BOSH_DEPLOYMENT:
+  BOSH_ERRAND_NAME:
+  BOSH_CLIENT: admin
