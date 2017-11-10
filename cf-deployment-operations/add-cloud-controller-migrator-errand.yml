@@ -1,7 +1,7 @@
 - type: replace
   path: /instance_groups/-
   value:
-    name: cloud-controller-migrator
+    name: capi-perm-migrator
     instances: 1
     azs: [z1]
     lifecycle: errand
