@@ -3,6 +3,10 @@ resource_types:
   type: docker-image
   source:
     repository: cloudfoundry/bosh-deployment-resource
+- name: bosh-errand
+  type: docker-image
+  source:
+    repository: starkandwayne/bosh2-errand-resource
 - name: gcs
   type: docker-image
   source:
@@ -105,6 +109,15 @@ resources:
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: ((github.private_key))
     branch: release-candidate
+- name: bosh-errand
+  type: bosh-errand
+  source:
+    # Overridden by source_file in the tasks
+    deployment: DONOTUSE
+    target: DONOTUSE
+    client: DONOTUSE
+    client_secret: DONOTUSE
+
 - name: cloud_controller_ng-perm-prs
   type: git-branch-heads
   source:
@@ -525,7 +538,7 @@ jobs:
           - perm-ci/cf-deployment-operations/add-cloud-controller-migrator-errand.yml
           - capi-ci/cf-deployment-operations/use-latest-capi.yml
         on_failure:
-          do:
+          do: &pend-broken-environment
           - task: pend-broken-environment
             file: perm-ci/tasks/pend-broken-environment/task.yml
             params:
@@ -575,7 +588,7 @@ jobs:
       - create-capi-alpha-pr
   - do: *deploy-cf
 
-- name: test-cf
+- name: run-errands
   plan:
   - aggregate:
     - get: broken-pool-repo
@@ -585,11 +598,8 @@ jobs:
       passed:
       - deploy-cf
     - get: capi-release-alpha
-      trigger: true
       passed:
       - deploy-cf
-    - get: cats-concourse-task
-    - get: cf-acceptance-tests
     - get: perm
       passed:
       - deploy-cf
@@ -602,7 +612,6 @@ jobs:
       passed:
       - deploy-cf
     - get: terraform
-      trigger: true
       passed:
       - deploy-cf
       trigger: true
@@ -610,6 +619,58 @@ jobs:
       resource: alpha
       passed:
       - deploy-cf
+  - do: &run-errands
+    - task: download-from-gcs
+      file: capi-ci/ci/gcs/download-from-gcs.yml
+      input_mapping:
+        environment: terraform
+      output_mapping:
+        destination-directory: environment-directory
+      params: *gcp-environment-params
+    - task: write-errand-source-file
+      file: perm-ci/tasks/write-errands-source-file/task.yml
+    - put: bosh-errand
+      params:
+        name: cloud-controller-migrator
+        source_file: errand-configuration-directory/config.json
+      on_failure:
+        do: *pend-broken-environment
+
+
+- name: test-cf
+  plan:
+  - aggregate:
+    - get: broken-pool-repo
+    - get: capi-ci
+    - get: capi-release
+      resource: capi-release-develop
+      passed:
+      - run-errands
+    - get: capi-release-alpha
+      trigger: true
+      passed:
+      - run-errands
+    - get: cats-concourse-task
+    - get: cf-acceptance-tests
+    - get: perm
+      passed:
+      - run-errands
+    - get: perm-ci
+    - get: perm-release
+      trigger: true
+      passed:
+      - run-errands
+    - get: release-alpha
+      passed:
+      - run-errands
+    - get: terraform
+      passed:
+      - run-errands
+      trigger: true
+    - get: version
+      resource: alpha
+      passed:
+      - run-errands
   - do: &test-cf
     - task: download-from-gcs
       file: capi-ci/ci/gcs/download-from-gcs.yml
@@ -627,18 +688,7 @@ jobs:
       params:
         NODES: 8
       ensure:
-        do:
-        - task: pend-broken-environment
-          file: perm-ci/tasks/pend-broken-environment/task.yml
-          params:
-            POOL_NAME: bosh-lites-broken
-          input_mapping:
-            environment-name-dir: terraform
-            pool-repo: broken-pool-repo
-        - put: broken-pool-repo
-          params:
-            repository: updated-pool-repo-dir/repo
-            rebase: true
+        do: *pend-broken-environment
 
 - name: test-cf-pr
   plan:
