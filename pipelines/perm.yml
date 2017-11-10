@@ -615,7 +615,7 @@ jobs:
         destination-directory: environment-directory
       params: *gcp-environment-params
     - task: run-bosh-errand
-      file: perm-ci/tasks/run-bosh-errand/task.sh
+      file: perm-ci/tasks/run-bosh-errand/task.yml
       params:
         BOSH_DEPLOYMENT: cf
         BOSH_ERRAND_NAME: cloud-controller-migrator
