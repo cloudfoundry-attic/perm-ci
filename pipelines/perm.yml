@@ -522,7 +522,7 @@ jobs:
           - perm-ci/cf-deployment-operations/add-bpm.yml
           - perm-ci/cf-deployment-operations/add-perm.yml
           - perm-ci/cf-deployment-operations/add-perm-monitor-api-sidecar.yml
-          - perm-ci/cf-deployment-operations/add-cloud-controller-migrator-errand.yml
+          - perm-ci/cf-deployment-operations/add-cc-to-perm-migrator-errand.yml
           - capi-ci/cf-deployment-operations/use-latest-capi.yml
         on_failure:
           do: &pend-broken-environment
@@ -614,11 +614,11 @@ jobs:
       output_mapping:
         destination-directory: environment-directory
       params: *gcp-environment-params
-    - task: run-bosh-errand
+    - task: run-cc-to-perm-migrator-errand
       file: perm-ci/tasks/run-bosh-errand/task.yml
       params:
         BOSH_DEPLOYMENT: cf
-        BOSH_ERRAND_NAME: cloud-controller-migrator
+        BOSH_ERRAND_NAME: cc-to-perm-migrator
       on_failure:
         do: *pend-broken-environment
 

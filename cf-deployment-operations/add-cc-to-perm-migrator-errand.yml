@@ -10,7 +10,7 @@
     networks:
     - name: default
     jobs:
-    - name: cloud-controller-migrator
+    - name: cc-to-perm-migrator
       release: perm
       properties:
         uaa:
