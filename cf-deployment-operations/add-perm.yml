@@ -23,6 +23,10 @@
             schema: perm
             host: sql-db.service.cf.internal
             port: 3306
+          tls:
+            required: true
+            ca_certs:
+            - ((perm/mysql-tls.ca))
     - name: bpm
       release: bpm
       properties: {}
@@ -48,11 +52,22 @@
     username: perm
 
 - type: replace
+  path: /instance_groups/name=mysql/jobs/name=mysql/properties/cf_mysql/mysql/tls?/ca_certificate
+  value: ((perm/mysql-tls.ca))
+
+- type: replace
+  path: /instance_groups/name=mysql/jobs/name=mysql/properties/cf_mysql/mysql/tls?/server_certificate
+  value: ((perm/mysql-tls.certificate))
+
+- type: replace
+  path: /instance_groups/name=mysql/jobs/name=mysql/properties/cf_mysql/mysql/tls?/server_key
+  value: ((perm/mysql-tls.private_key))
+
+- type: replace
   path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties?/perm
   value:
     ca_certs:
     - ((perm/tls.ca))
-
 
 - type: replace
   path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/perm?/enabled
@@ -86,6 +101,24 @@
       extended_key_usage:
       - client_auth
       - server_auth
+
+- type: replace
+  path: /variables/-
+  value:
+    name: perm/mysql-tls-ca
+    type: certificate
+    options:
+      is_ca: true
+      common_name: perm_mysql_ca
+
+- type: replace
+  path: /variables/-
+  value:
+    name: perm/mysql-tls
+    type: certificate
+    options:
+      ca: perm/mysql-tls-ca
+      common_name: sql-db.service.cf.internal
 
 - type: replace
   path: /variables/-
