@@ -52,15 +52,15 @@
     username: perm
 
 - type: replace
-  path: /instance_groups/name=mysql/jobs/name=mysql/properties/cf_mysql/mysql/tls?/ca_certificate
+  path: /instance_groups/name=database?/jobs/name=mysql/properties/cf_mysql/mysql/tls?/ca_certificate
   value: ((perm/mysql-tls.ca))
 
 - type: replace
-  path: /instance_groups/name=mysql/jobs/name=mysql/properties/cf_mysql/mysql/tls?/server_certificate
+  path: /instance_groups/name=database?/jobs/name=mysql/properties/cf_mysql/mysql/tls?/server_certificate
   value: ((perm/mysql-tls.certificate))
 
 - type: replace
-  path: /instance_groups/name=mysql/jobs/name=mysql/properties/cf_mysql/mysql/tls?/server_key
+  path: /instance_groups/name=database?/jobs/name=mysql/properties/cf_mysql/mysql/tls?/server_key
   value: ((perm/mysql-tls.private_key))
 
 - type: replace
