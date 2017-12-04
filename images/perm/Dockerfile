@@ -1,4 +1,4 @@
-FROM alpine
+FROM alpine:3.6
 
 ADD ["perm", "/usr/bin/perm"]
 ADD ["certs/perm.crt", "/etc/certs/perm.crt"]

@@ -4,7 +4,7 @@ image_resource:
   type: docker-image
   source:
     repository: golang
-    tag: alpine
+    tag: alpine3.6
 
 inputs:
 - name: release

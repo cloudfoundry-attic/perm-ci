@@ -256,6 +256,7 @@ jobs:
         type: docker-image
         source:
           repository: alpine
+          tag: 3.6
       inputs:
       - name: bbl-version
       - name: bosh-cli-version
