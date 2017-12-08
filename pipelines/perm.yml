@@ -136,6 +136,14 @@ resources:
     uri: git@github.com:cloudfoundry-incubator/perm-release
     branch: master
     private_key: ((github.private_key))
+- name: perm-release-without-submodule
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry-incubator/perm-release
+    branch: master
+    private_key: ((github.private_key))
+    ignore_paths:
+    - src/code.cloudfoundry.org/perm/*
 - name: release-alpha
   type: gcs
   source:
@@ -206,8 +214,10 @@ jobs:
     - get: perm
       passed:
       - bump-submodule
-    - get: perm-release
       trigger: true
+    - get: perm-release-without-submodule
+      trigger: true
+    - get: perm-release
     - get: version
       resource: alpha
       params:
