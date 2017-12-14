@@ -527,9 +527,9 @@ jobs:
           - perm-ci/cf-deployment-operations/undo-metron-addon.yml
           - capi-ci/cf-deployment-operations/skip-cert-verify.yml
           - capi-ci/cf-deployment-operations/use-latest-stemcell.yml
+          - cf-deployment/operations/experimental/enable-bpm.yml
           - cf-deployment/operations/bosh-lite.yml
           - cf-deployment/operations/use-compiled-releases.yml
-          - perm-ci/cf-deployment-operations/add-bpm.yml
           - perm-ci/cf-deployment-operations/add-perm.yml
           - perm-ci/cf-deployment-operations/add-perm-monitor-api-sidecar.yml
           - perm-ci/cf-deployment-operations/add-cc-to-perm-migrator-errand.yml
