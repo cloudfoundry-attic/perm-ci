@@ -1,5 +1,5 @@
 - type: replace
-  path: /instance_groups/name=consul/jobs/-
+  path: /instance_groups/name=nats/jobs/-
   value:
     name: metron_agent
     release: loggregator
@@ -10,13 +10,6 @@
           metron:
             cert: "((loggregator_tls_metron.certificate))"
             key: "((loggregator_tls_metron.private_key))"
-
-- type: replace
-  path: /instance_groups/name=nats/jobs/-
-  value:
-    name: metron_agent
-    release: loggregator
-    properties: *metron_agent_properties
 
 - type: replace
   path: /instance_groups/name=doppler/jobs/-

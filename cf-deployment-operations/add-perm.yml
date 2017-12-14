@@ -30,18 +30,6 @@
     - name: bpm
       release: bpm
       properties: {}
-    - name: consul_agent
-      release: consul
-      consumes:
-        consul_common: {from: consul_common_link}
-        consul_server: nil
-        consul_client: {from: consul_client_link}
-      properties:
-        consul:
-          agent:
-            services:
-              perm:
-                name: perm
 
 # Changes to other instance groups
 - type: replace
