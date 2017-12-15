@@ -7,10 +7,3 @@
       perm:
         ca_certs:
         - ((perm/tls.ca))
-
-- type: replace
-  path: /instance_groups/name=api/jobs/-
-  value:
-    name: bpm
-    release: bpm
-    properties: {}
