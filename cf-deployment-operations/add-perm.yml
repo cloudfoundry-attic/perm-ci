@@ -27,9 +27,6 @@
             required: true
             ca_certs:
             - ((perm/mysql-tls.ca))
-    - name: bpm
-      release: bpm
-      properties: {}
 
 # Changes to other instance groups
 - type: replace
