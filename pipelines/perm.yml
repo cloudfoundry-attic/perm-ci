@@ -524,11 +524,17 @@ jobs:
           vars_files:
           - bosh-target/vars.yml
           ops_files:
-          - perm-ci/cf-deployment-operations/undo-metron-addon.yml
+          - cf-deployment/operations/workaround/undo-metron-add-on.yml
           - capi-ci/cf-deployment-operations/skip-cert-verify.yml
           - capi-ci/cf-deployment-operations/use-latest-stemcell.yml
           - cf-deployment/operations/experimental/enable-bpm.yml
+          - cf-deployment/operations/experimental/skip-consul-cell-registrations.yml
+          - cf-deployment/operations/experimental/skip-consul-locks.yml
+          - cf-deployment/operations/experimental/use-bosh-dns.yml
+          - cf-deployment/operations/experimental/disable-consul.yml
+          - perm-ci/cf-deployment-operations/workaround/reenable-consul-stub.yml
           - cf-deployment/operations/bosh-lite.yml
+          - perm-ci/cf-deployment-operations/workaround/disable-consul-bosh-lite.yml
           - cf-deployment/operations/use-compiled-releases.yml
           - perm-ci/cf-deployment-operations/add-perm.yml
           - perm-ci/cf-deployment-operations/add-perm-monitor-api-sidecar.yml
