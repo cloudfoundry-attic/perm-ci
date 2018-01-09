@@ -62,6 +62,11 @@
   path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/perm?/query_enabled
   value: true
 
+- type: replace
+  path: /addons/name=bosh-dns/jobs/name=bosh-dns/properties/aliases/perm.service.cf.internal?
+  value:
+    - "*.perm.default.cf.bosh"
+
 # Changes to releases
 - type: replace
   path: /releases/-
