@@ -16,7 +16,7 @@ function login_to_credhub() {
   uaa_ca="$(bosh interpolate "$CREDS_PATH" --path /default_ca/ca)"
   credhub_ca="$(bosh interpolate "$CREDS_PATH" --path /credhub_ca/ca)"
   credhub_username="credhub-cli"
-  credhub_password="$(bosh interpolate "$CREDS_PATH" --path /credhub_cli_password)"
+  credhub_password="$(bosh interpolate "$CREDS_PATH" --path /credhub_admin_client_secret)"
   credhub api "https://${EXTERNAL_IP}:8844" --ca-cert "${credhub_ca}" --ca-cert "${uaa_ca}"
   credhub login -u "${credhub_username}" -p "${credhub_password}"
 }
