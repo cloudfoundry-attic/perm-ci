@@ -1,0 +1,21 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: cfperm/bbl-cryptdo
+
+inputs:
+- name: perm-ci
+- name: perm-ci-credentials
+
+outputs:
+- name: deployment-target-dir
+
+params:
+  ENV_NAME:
+  CRYPTDO_PASSWORD:
+
+run:
+  path: perm-ci/tasks/write-deployment-target-file/task.sh
