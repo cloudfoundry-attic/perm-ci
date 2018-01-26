@@ -14,8 +14,9 @@ outputs:
 - name: deployment-target-dir
 
 params:
-  ENV_NAME:
   CRYPTDO_PASSWORD:
+  DEPLOYMENT_NAME:
+  ENV_NAME:
 
 run:
   path: perm-ci/tasks/write-deployment-target-file/task.sh
