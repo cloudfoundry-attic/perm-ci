@@ -26,10 +26,6 @@ function get_credentials() {
     CA_CERT="$(bbl director-ca-cert)"
     JUMPBOX_SSH="$(bbl ssh-key)"
     JUMPBOX_URL="$(bbl jumpbox-address)"
-
-    rm bbl-state.json
-    shopt -s extglob
-    rm vars/!(*.enc)
   popd > /dev/null
 }
 
@@ -46,9 +42,20 @@ function store_target_file() {
 EOF
 }
 
+function cleanup_decrypted_files() {
+  shopt -s globstar
+  pushd "${ENVIRONMENT_DIRECTORY}/${ENV_NAME}" > /dev/null
+    for file in **/*.enc; do
+      rm -f "${file%%.enc}"
+    done
+  popd > /dev/null
+}
+
 function main() {
   get_credentials
   store_target_file
 }
+
+trap cleanup_decrypted_files EXIT
 
 main
