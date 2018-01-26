@@ -2,20 +2,35 @@
 
 set -eu
 
-ENVIRONMENT_DIRECTORY="${PWD}/perm-ci-credentials
+ENVIRONMENT_DIRECTORY="${PWD}/perm-ci-credentials"
 TARGET_FILE_PATH="${PWD}/deployment-target-dir/target.yml"
 
 function get_credentials() {
   pushd "${ENVIRONMENT_DIRECTORY}/${ENV_NAME}" > /dev/null
-    cryptdo -p "$CRYPTDO_PASSWORD" -- eval "$(bbl print-env)"
-    cryptdo -p "$CRYPTDO_PASSWORD" -- JUMPBOX_URL="$(bbl jumpbox-address)"
-  popd > /dev/null
+    cryptdo -p "$CRYPTDO_PASSWORD" -- cat bbl-state.json > bbl-state.json.decrypted
+    mv bbl-state.json.decrypted bbl-state.json
 
-  TARGET="${BOSH_ENVIRONMENT}"
-  CLIENT="${BOSH_CLIENT}"
-  CLIENT_SECRET="${BOSH_CLIENT_SECRET}"
-  CA_CERT="${BOSH_CA_CERT}"
-  JUMPBOX_SSH="$(cat $JUMPBOX_PRIVATE_KEY)"
+    pushd vars > /dev/null
+      for file in *.enc; do
+        cryptdo -p "$CRYPTDO_PASSWORD" -- cat "${file%%.enc}" > "${file%%.enc}.decrypted"
+      done
+
+      for file in *.decrypted; do
+        mv "${file}" "${file%%.decrypted}"
+      done
+    popd > /dev/null
+
+    TARGET="$(bbl director-address)"
+    CLIENT="$(bbl director-username)"
+    CLIENT_SECRET="$(bbl director-password)"
+    CA_CERT="$(bbl director-ca-cert)"
+    JUMPBOX_SSH="$(bbl ssh-key)"
+    JUMPBOX_URL="$(bbl jumpbox-address)"
+
+    rm bbl-state.json
+    shopt -s extglob
+    rm vars/!(*.enc)
+  popd > /dev/null
 }
 
 function store_target_file() {
