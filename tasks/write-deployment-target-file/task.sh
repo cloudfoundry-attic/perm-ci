@@ -24,7 +24,7 @@ function get_credentials() {
     CLIENT="$(bbl director-username)"
     CLIENT_SECRET="$(bbl director-password)"
     CA_CERT="$(bbl director-ca-cert)"
-    JUMPBOX_SSH="$(bbl ssh-key)"
+    JUMPBOX_SSH_KEY="$(bbl ssh-key)"
     JUMPBOX_URL="$(bbl jumpbox-address)"
   popd > /dev/null
 }
@@ -38,7 +38,7 @@ function store_target_file() {
   "client_secret": "$CLIENT_SECRET",
   "ca_cert": "$CA_CERT",
   "jumpbox_url": "$JUMPBOX_URL",
-  "jumpbox_ssh": "$JUMPBOX_SSH"
+  "jumpbox_ssh_key": "$JUMPBOX_SSH_KEY"
 }
 EOF
 }
