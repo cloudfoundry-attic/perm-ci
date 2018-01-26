@@ -32,7 +32,6 @@ function get_credentials() {
 function store_target_file() {
   cat > "$TARGET_FILE_PATH" <<EOF
 {
-  "deployment": "$DEPLOYMENT_NAME",
   "target": "$TARGET",
   "client": "$CLIENT",
   "client_secret": "$CLIENT_SECRET",

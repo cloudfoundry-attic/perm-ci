@@ -15,7 +15,6 @@ outputs:
 
 params:
   CRYPTDO_PASSWORD:
-  DEPLOYMENT_NAME:
   ENV_NAME:
 
 run:

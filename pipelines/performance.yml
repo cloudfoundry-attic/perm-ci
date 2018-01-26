@@ -50,10 +50,10 @@ jobs:
         file: perm-ci/tasks/write-deployment-target-file/task.yml
         params:
           CRYPTDO_PASSWORD: ((cryptdo_password))
-          DEPLOYMENT_NAME: cf
           ENV_NAME: cleopatra
       - put: cf-deploy
         params:
+          deployment: cf
           source_file: deployment-target-dir/target.yml
           manifest: cf-deployment/cf-deployment.yml
           releases:
