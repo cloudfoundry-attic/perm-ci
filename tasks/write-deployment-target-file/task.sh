@@ -2,6 +2,14 @@
 
 set -eu
 
+indent() {
+  sed -e 's/^/  /'
+}
+
+indent_contents_of() {
+  indent < "$1"
+}
+
 ENVIRONMENT_DIRECTORY="${PWD}/perm-ci-credentials"
 TARGET_FILE_PATH="${PWD}/deployment-target-dir/target.yml"
 
@@ -30,16 +38,17 @@ function get_credentials() {
 }
 
 function store_target_file() {
-  cat > "$TARGET_FILE_PATH" <<EOF
-{
-  "deployment": "$DEPLOYMENT_NAME",
-  "target": "$TARGET",
-  "client": "$CLIENT",
-  "client_secret": "$CLIENT_SECRET",
-  "ca_cert": "$CA_CERT",
-  "jumpbox_url": "$JUMPBOX_URL",
-  "jumpbox_ssh_key": "$JUMPBOX_SSH_KEY"
-}
+  cat <<-EOF > "${TARGET_FILE_PATH}"
+---
+deployment: "${DEPLOYMENT_NAME}"
+target: "${TARGET}"
+client: "${CLIENT}"
+client_secret: "${CLIENT_SECRET}"
+ca_cert: |
+$(indent_contents_of <( echo "${CA_CERT}" ))
+jumpbox_url: "${JUMPBOX_URL}:22"
+jumpbox_ssh_key: |
+$(indent_contents_of <( echo "${JUMPBOX_SSH_KEY}" ))
 EOF
 }
 
