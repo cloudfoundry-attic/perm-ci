@@ -37,7 +37,7 @@ function store_target_file() {
   "client_secret": "$CLIENT_SECRET",
   "ca_cert": "$CA_CERT",
   "jumpbox_url": "$JUMPBOX_URL",
-  "jumbox_ssh": "$JUMPBOX_SSH"
+  "jumpbox_ssh": "$JUMPBOX_SSH"
 }
 EOF
 }
