@@ -11,7 +11,11 @@ indent_contents_of() {
 }
 
 ENVIRONMENT_DIRECTORY="${PWD}/perm-ci-credentials"
-TARGET_FILE_PATH="${PWD}/deployment-target-dir/target.yml"
+TARGET_DIR="${PWD}/deployment-target-dir"
+TARGET_FILE_PATH="${TARGET_DIR}/target.yml"
+VARS_FILE_PATH="${TARGET_DIR}/vars.yml"
+
+SYSTEM_DOMAIN="${ENV_NAME}.perm.cf-app.com"
 
 function get_credentials() {
   pushd "${ENVIRONMENT_DIRECTORY}/${ENV_NAME}" > /dev/null
@@ -52,6 +56,13 @@ $(indent_contents_of <( echo "${JUMPBOX_SSH_KEY}" ))
 EOF
 }
 
+function store_vars_file() {
+  cat <<-EOF > "${VARS_FILE_PATH}"
+---
+system_domain: "${SYSTEM_DOMAIN}"
+EOF
+}
+
 function cleanup_decrypted_files() {
   shopt -s globstar
   pushd "${ENVIRONMENT_DIRECTORY}/${ENV_NAME}" > /dev/null
@@ -64,6 +75,7 @@ function cleanup_decrypted_files() {
 function main() {
   get_credentials
   store_target_file
+  store_vars_file
 }
 
 trap cleanup_decrypted_files EXIT

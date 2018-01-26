@@ -54,10 +54,10 @@ jobs:
           ENV_NAME: cleopatra
       - put: cf-deploy
         params:
-          source_file: deployment-target-dir/target.yml
           manifest: cf-deployment/cf-deployment.yml
           releases:
           - release-beta/*.tgz
+          source_file: deployment-target-dir/target.yml
           ops_files:
           - cf-deployment/operations/experimental/enable-bpm.yml
           - cf-deployment/operations/experimental/skip-consul-cell-registrations.yml
@@ -68,3 +68,5 @@ jobs:
           - perm-ci/cf-deployment-operations/add-perm.yml
           - perm-ci/cf-deployment-operations/add-perm-monitor-api-sidecar.yml
           - perm-ci/cf-deployment-operations/add-cc-to-perm-migrator-errand.yml
+          vars_files:
+          - deployment-target-dir/vars.yml
