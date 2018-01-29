@@ -16,7 +16,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: ((github.private_key))
-    branch: release-candidate
+    branch: master
 - name: perm-ci
   type: git
   source:
@@ -29,6 +29,10 @@ resources:
     uri: git@github.com:pivotal-cf/perm-ci-credentials
     branch: master
     private_key: ((github.private_key))
+- name: gcp-stemcell
+  type: bosh-io-stemcell
+  source:
+    name: bosh-google-kvm-ubuntu-trusty-go_agent
 - name: release-beta
   type: gcs
   source:
@@ -41,6 +45,7 @@ jobs:
   plan:
   - aggregate:
     - get: cf-deployment
+    - get: gcp-stemcell
     - get: perm-ci
     - get: perm-ci-credentials
     - get: release-beta
@@ -58,7 +63,10 @@ jobs:
           releases:
           - release-beta/*.tgz
           source_file: deployment-target-dir/target.yml
+          stemcells:
+          - gcp-stemcell/*.tgz
           ops_files:
+          - cf-deployment/operations/use-latest-stemcell.yml
           - cf-deployment/operations/experimental/enable-bpm.yml
           - cf-deployment/operations/experimental/skip-consul-cell-registrations.yml
           - cf-deployment/operations/experimental/skip-consul-locks.yml
