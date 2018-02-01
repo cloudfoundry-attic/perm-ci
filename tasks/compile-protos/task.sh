@@ -2,9 +2,11 @@
 
 set -eu
 
+WORKSPACE="${HOME}/workspace"
 PERM_PACKAGE="code.cloudfoundry.org/perm"
 # shellcheck disable=SC2153
 PERM_PATH="${PERM_GOPATH}/src/${PERM_PACKAGE}"
+PROTOS_PATH="${WORKSPACE}/perm-protos"
 
 GOPATH="$PERM_GOPATH"
 go install "${PERM_PACKAGE}/vendor/github.com/gogo/protobuf/protoc-gen-gofast"
@@ -19,5 +21,5 @@ protoc \
   --ruby_out="${PERM_RB_PATH}/lib/perm/protos" \
   --plugin=protoc-gen-grpc="$RUBY_PROTOC_PLUGIN" \
   --grpc_out="${PERM_RB_PATH}/lib/perm/protos" \
-  -I="${PERM_PATH}/protos:${PERM_PATH}/vendor" \
-  "${PERM_PATH}/protos/"*.proto
+  -I="${PROTOS_PATH}:${PERM_PATH}/vendor" \
+  "${PROTOS_PATH}/"*.proto
