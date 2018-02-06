@@ -92,8 +92,8 @@ jobs:
         file: perm-ci/tasks/write-deployment-target-file/task.yml
         params:
           CRYPTDO_PASSWORD: ((cryptdo_password))
-          DEPLOYMENT_NAME: cf-10x
-          ENV_NAME: cleopatra
+          DEPLOYMENT_NAME: cf
+          ENV_NAME: myeongseong
       - put: cf-deploy
         params:
           manifest: cf-deployment/cf-deployment.yml
@@ -112,6 +112,5 @@ jobs:
           - cf-deployment/operations/use-compiled-releases.yml
           - perm-ci/cf-deployment-operations/add-perm.yml
           - perm-ci/cf-deployment-operations/add-cc-to-perm-migrator-errand.yml
-          - perm-ci/cf-deployment-operations/workaround/10x-deployment.yml
           vars_files:
           - deployment-target-dir/vars.yml
