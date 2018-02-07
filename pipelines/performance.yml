@@ -112,5 +112,6 @@ jobs:
           - cf-deployment/operations/use-compiled-releases.yml
           - perm-ci/cf-deployment-operations/add-perm.yml
           - perm-ci/cf-deployment-operations/add-cc-to-perm-migrator-errand.yml
+          - perm-ci/cf-deployment-operations/scale-up-tinkerbell-database.yml
           vars_files:
           - deployment-target-dir/vars.yml
