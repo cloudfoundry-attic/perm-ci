@@ -39,11 +39,18 @@ resources:
     bucket: perm-releases
     regexp: perm-release-(.*).tgz
     json_key: ((gcp.json_key))
+- name: capi-release
+  type: gcs
+  source:
+    bucket: perm-alphas
+    regexp: capi-ignore-different-order-(.*).tgz
+    json_key: ((gcp.json_key))
 
 jobs:
 - name: deploy-cf
   plan:
   - aggregate:
+    - get: capi-release
     - get: cf-deployment
     - get: gcp-stemcell
     - get: perm-ci
@@ -61,6 +68,7 @@ jobs:
         params:
           manifest: cf-deployment/cf-deployment.yml
           releases:
+          - capi-release/*.tgz
           - release-beta/*.tgz
           source_file: deployment-target-dir/target.yml
           stemcells:
@@ -84,6 +92,7 @@ jobs:
 - name: deploy-cf-10x
   plan:
   - aggregate:
+    - get: capi-release
     - get: cf-deployment
     - get: gcp-stemcell
     - get: perm-ci
@@ -101,6 +110,7 @@ jobs:
         params:
           manifest: cf-deployment/cf-deployment.yml
           releases:
+          - capi-release/*.tgz
           - release-beta/*.tgz
           source_file: deployment-target-dir/target.yml
           stemcells:
