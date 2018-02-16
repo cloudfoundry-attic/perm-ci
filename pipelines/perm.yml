@@ -236,11 +236,13 @@ jobs:
       - bump-submodule
     - get: perm-release-without-submodule
       trigger: true
-    - get: perm-release
     - get: version
       resource: alpha
       params:
         pre: alpha
+  # Get perm-release after perm-release-without-submodule in case there are
+  # changes to the repo. Otherwise, perm-release may be stale.
+  - get: perm-release
   - put: alpha
     params:
       file: version/version
