@@ -218,7 +218,7 @@ jobs:
     params:
       file: version/version
 
-- name: create-alpha
+- name: test-migrator
   plan:
   - aggregate:
     - get: perm
@@ -228,11 +228,26 @@ jobs:
     - get: perm-release
       passed:
       - bump-alpha
+      trigger: true
+  - aggregate:
+    - task: test-migrator
+      file: perm-ci/tasks/test-migrator/task.yml
+
+- name: create-alpha
+  plan:
+  - aggregate:
+    - get: perm
+      passed:
+      - test-migrator
+    - get: perm-ci
+    - get: perm-release
+      passed:
+      - test-migrator
     - get: version
       resource: alpha
       trigger: true
       passed:
-      - bump-alpha
+      - test-migrator
   - aggregate:
     - task: build-perm-binary
       file: perm-ci/tasks/build-binary/task.yml
