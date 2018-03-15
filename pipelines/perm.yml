@@ -228,6 +228,10 @@ jobs:
     - get: perm-release
       passed:
       - bump-alpha
+    - get: version
+      passed:
+      - bump-alpha
+      resource: alpha
       trigger: true
   - aggregate:
     - task: test-migrator
