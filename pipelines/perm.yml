@@ -136,14 +136,6 @@ resources:
     uri: git@github.com:cloudfoundry-incubator/perm-release
     branch: master
     private_key: ((github.private_key))
-- name: perm-release-without-submodule
-  type: git
-  source:
-    uri: git@github.com:cloudfoundry-incubator/perm-release
-    branch: master
-    private_key: ((github.private_key))
-    ignore_paths:
-    - src/code.cloudfoundry.org/perm/*
 - name: release-alpha
   type: gcs
   source:
@@ -214,35 +206,14 @@ jobs:
     - get: perm
       passed:
       - bump-submodule
-      trigger: true
-    # Yes, there really are *three* versions of the perm-release resource:
-    # - perm-release-with-submodule: This is just used to track the version
-    #   of perm-release that last passed bump-submodule.
-    #   It's non-triggering because perm is already a trigger.
-    # - perm-release-without-submodule: This ensures that changes to the
-    #   perm-release repo *other* than submodule bumps will trigger a new
-    #   alpha version.
-    # - perm-release: This is the canonical version that actually gets
-    #   consumed in the job. It's the latest commit to master.
-    # If we just triggered the job on the latest perm-release commit, we
-    # wouldn't necessarily get the latest version of the perm repo due to
-    # a race condition between when the previous job actually *pushes*
-    # perm-release and when the previous job *completes* (i.e., when resource
-    # versions are deemed to have "passed" the job).
-    # ...Yup.
-    - get: perm-release-with-submodule
-      resource: perm-release
-      passed:
-      - bump-submodule
-    - get: perm-release-without-submodule
-      trigger: true
     - get: version
       resource: alpha
       params:
         pre: alpha
-  # Get perm-release after perm-release-without-submodule in case there are
-  # changes to the repo. Otherwise, perm-release may be stale.
+  # Get perm-release after perm to avoid race conditions where the perm repo
+  # gets pushed before perm-release during the `bump-submodule` job.
   - get: perm-release
+    trigger: true
   - put: alpha
     params:
       file: version/version
