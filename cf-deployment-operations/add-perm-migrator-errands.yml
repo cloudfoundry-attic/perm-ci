@@ -1,6 +1,30 @@
 - type: replace
   path: /instance_groups/-
   value:
+    name: perm-drop-database
+    instances: 1
+    azs: [z1]
+    lifecycle: errand
+    vm_type: minimal
+    stemcell: default
+    networks:
+    - name: default
+    jobs:
+    - name: perm-drop-db
+      release: perm
+      properties:
+        sql:
+          db:
+            driver: mysql
+            username: perm
+            password: ((perm/database_password))
+            schema: perm
+            host: sql-db.service.cf.internal
+            port: 3306
+
+- type: replace
+  path: /instance_groups/-
+  value:
     name: capi-perm-migrator
     instances: 1
     azs: [z1]
