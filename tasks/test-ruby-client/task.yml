@@ -17,8 +17,8 @@ inputs:
 - name: version
 
 params:
-  PERM_TEST_SQL_DB_USERNAME: root
-  PERM_TEST_SQL_DB_PASSWORD: password
+  TEST_MYSQL_USERNAME: root
+  TEST_MYSQL_PASSWORD: password
   # ruby-mysql expects the socket to be at /tmp/mysql.sock
   # but this image puts it in /var/run/mysqld/mysqld.sock
   PERM_TEST_SQL_DB_SOCKET: /var/run/mysqld/mysqld.sock
