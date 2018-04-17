@@ -6,7 +6,7 @@ WORKSPACE="${HOME}/workspace"
 PERM_GO_PACKAGE="code.cloudfoundry.org/perm-go"
 # shellcheck disable=SC2153
 PERM_GO_PATH="${GOPATH}/src/${PERM_GO_PACKAGE}"
-PROTOS_PATH="${WORKSPACE}/perm-protos"
+PROTOS_PATH="${WORKSPACE}/perm-release/src/code.cloudfoundry.org/perm/protos"
 
 go install "${PERM_GO_PACKAGE}/vendor/github.com/gogo/protobuf/protoc-gen-gofast"
 
