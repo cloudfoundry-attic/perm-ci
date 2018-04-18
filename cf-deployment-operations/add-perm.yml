@@ -14,45 +14,45 @@
       release: perm
       properties:
         log_level: debug
-        tls: ((perm-tls))
+        tls: ((perm/tls))
         sql:
           db:
             driver: mysql
             username: perm
-            password: ((perm-database_password))
+            password: ((perm/database_password))
             schema: perm
             host: sql-db.service.cf.internal
             port: 3306
           tls:
             required: true
             ca_certs:
-            - ((perm-mysql-tls.ca))
+            - ((perm/mysql-tls.ca))
 
 # Changes to other instance groups
 - type: replace
   path: /instance_groups/name=database?/jobs/name=mysql/properties/cf_mysql/mysql/seeded_databases/-
   value:
     name: perm
-    password: ((perm-database_password))
+    password: ((perm/database_password))
     username: perm
 
 - type: replace
   path: /instance_groups/name=database?/jobs/name=mysql/properties/cf_mysql/mysql/tls?/ca_certificate
-  value: ((perm-mysql-tls.ca))
+  value: ((perm/mysql-tls.ca))
 
 - type: replace
   path: /instance_groups/name=database?/jobs/name=mysql/properties/cf_mysql/mysql/tls?/server_certificate
-  value: ((perm-mysql-tls.certificate))
+  value: ((perm/mysql-tls.certificate))
 
 - type: replace
   path: /instance_groups/name=database?/jobs/name=mysql/properties/cf_mysql/mysql/tls?/server_key
-  value: ((perm-mysql-tls.private_key))
+  value: ((perm/mysql-tls.private_key))
 
 - type: replace
   path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties?/perm
   value:
     ca_certs:
-    - ((perm-tls.ca))
+    - ((perm/tls.ca))
 
 - type: replace
   path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/perm?/enabled
@@ -78,7 +78,7 @@
 - type: replace
   path: /variables/-
   value:
-    name: perm-tls-ca
+    name: perm/tls-ca
     type: certificate
     options:
       is_ca: true
@@ -87,10 +87,10 @@
 - type: replace
   path: /variables/-
   value:
-    name: perm-tls
+    name: perm/tls
     type: certificate
     options:
-      ca: perm-tls-ca
+      ca: perm/tls-ca
       common_name: perm.service.cf.internal
       extended_key_usage:
       - client_auth
@@ -99,7 +99,7 @@
 - type: replace
   path: /variables/-
   value:
-    name: perm-mysql-tls-ca
+    name: perm/mysql-tls-ca
     type: certificate
     options:
       is_ca: true
@@ -108,14 +108,14 @@
 - type: replace
   path: /variables/-
   value:
-    name: perm-mysql-tls
+    name: perm/mysql-tls
     type: certificate
     options:
-      ca: perm-mysql-tls-ca
+      ca: perm/mysql-tls-ca
       common_name: sql-db.service.cf.internal
 
 - type: replace
   path: /variables/-
   value:
-    name: perm-database_password
+    name: perm/database_password
     type: password
