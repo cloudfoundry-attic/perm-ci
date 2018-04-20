@@ -38,12 +38,14 @@
       release: perm
       properties:
         uaa:
-          url: https://uaa.((system_domain))
+          hostname: uaa.((system_domain))
+          port: 443
           ca_certs:
           - ((router_ssl.ca))
 
         cloud_controller:
-          url: https://api.((system_domain))
+          hostname: api.((system_domain))
+          port: 443
           client_id: cloud-controller-monitor
           client_secret: ((perm/uaa_clients_cloud_controller_monitor_secret))
           client_scopes:
