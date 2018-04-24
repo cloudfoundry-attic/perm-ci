@@ -7,7 +7,7 @@
       loggregator:
         tls:
           ca_cert: "((loggregator_tls_agent.ca))"
-          agent:
+          metron:
             cert: "((loggregator_tls_agent.certificate))"
             key: "((loggregator_tls_agent.private_key))"
 
