@@ -17,7 +17,7 @@
           db:
             driver: mysql
             username: perm
-            password: ((perm/database_password))
+            password: ((perm-database_password))
             schema: perm
             host: sql-db.service.cf.internal
             port: 3306
@@ -47,18 +47,18 @@
           hostname: api.((system_domain))
           port: 443
           client_id: cloud-controller-monitor
-          client_secret: ((perm/uaa_clients_cloud_controller_monitor_secret))
+          client_secret: ((perm_uaa_clients_cloud_controller_monitor_secret))
           client_scopes:
           - cloud_controller.admin_read_only
 
         perm:
           ca_certs:
-          - ((perm/tls.ca))
+          - ((perm-tls.ca))
         sql:
           db:
             driver: mysql
             username: perm
-            password: ((perm/database_password))
+            password: ((perm-database_password))
             schema: perm
             host: sql-db.service.cf.internal
             port: 3306
@@ -68,10 +68,10 @@
   value:
     authorities: cloud_controller.admin_read_only
     authorized-grant-types: client_credentials
-    secret: ((perm/uaa_clients_cloud_controller_monitor_secret))
+    secret: ((perm_uaa_clients_cloud_controller_monitor_secret))
 
 - type: replace
   path: /variables/-
   value:
-    name: perm/uaa_clients_cloud_controller_monitor_secret
+    name: perm_uaa_clients_cloud_controller_monitor_secret
     type: password
