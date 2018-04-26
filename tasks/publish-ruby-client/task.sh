@@ -9,6 +9,7 @@ cat << EOF > ${HOME}/.gem/credentials
 ---
 :rubygems_api_key: ${RUBYGEMS_API_KEY}
 EOF
+chmod 0600 ${HOME}/.gem/credentials
 
 pushd perm-rb
   # Something's busted with the ruby docker image, so this is the workaround
