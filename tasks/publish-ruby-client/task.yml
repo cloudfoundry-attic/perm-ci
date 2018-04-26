@@ -16,5 +16,4 @@ inputs:
 - name: version
 
 params:
-  GEMS_LOGIN:
-  GEMS_SECRET:
+  RUBYGEMS_API_KEY:
