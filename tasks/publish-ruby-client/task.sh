@@ -15,8 +15,10 @@ pushd perm-rb
   # https://github.com/bundler/bundler/issues/6162
   export BUNDLE_GEMFILE="${PWD}/Gemfile"
   bundle install
-  gem build *.gemspec
+  for GEMSPEC in *.gemspec; do
+    gem build ${GEMSPEC}
+  done
   for GEM in *.gem; do
-    gem push $GEM
+    gem push ${GEM}
   done
 popd
