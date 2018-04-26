@@ -303,6 +303,22 @@ jobs:
   - task: test-ruby-client
     file: perm-ci/tasks/test-ruby-client/task.yml
 
+- name: publish-ruby-client
+  plan:
+  - aggregate:
+    - get: perm-ci
+    - get: perm-rb
+      passed:
+      - test-ruby-client
+    - get: version
+      resource: alpha
+      passed:
+      - test-ruby-client
+  - task: publish-ruby-client
+    file: perm-ci/tasks/publish-ruby-client/task.yml
+    params:
+      RUBYGEMS_API_KEY: ((rubygems.api_key))
+
 - name: test-capi
   plan:
   - aggregate:
