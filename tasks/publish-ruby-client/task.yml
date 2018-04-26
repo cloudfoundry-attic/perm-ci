@@ -1,0 +1,20 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: cfperm/requirements
+    tag: capi
+
+run:
+  path: perm-ci/tasks/publish-ruby-client/task.sh
+  args: []
+
+inputs:
+- name: perm-rb
+- name: perm-ci
+- name: version
+
+params:
+  GEMS_LOGIN:
+  GEMS_SECRET:
