@@ -23,4 +23,3 @@ params:
   # but this image puts it in /var/run/mysqld/mysqld.sock
   PERM_TEST_SQL_DB_SOCKET: /var/run/mysqld/mysqld.sock
   PERM_TEST_AUDIT_FILE_PATH: /var/log/perm-audit.log
-  PERM_TEST_SQL_DB_PASSWORD: not_used
