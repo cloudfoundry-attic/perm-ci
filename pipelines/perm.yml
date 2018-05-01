@@ -564,7 +564,6 @@ jobs:
           - cf-deployment/operations/use-compiled-releases.yml
           - perm-ci/cf-deployment-operations/add-perm.yml
           - perm-ci/cf-deployment-operations/add-perm-monitor-api-sidecar.yml
-          - perm-ci/cf-deployment-operations/add-perm-migrator-errands.yml
           - capi-ci/cf-deployment-operations/use-latest-capi.yml
         on_failure:
           do: &pend-broken-environment
