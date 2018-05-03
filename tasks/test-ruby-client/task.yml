@@ -14,12 +14,6 @@ inputs:
 - name: perm-bin-dir
 - name: perm-rb
 - name: perm-ci
-- name: version
 
 params:
-  TEST_MYSQL_USERNAME: root
-  TEST_MYSQL_PASSWORD: password
-  # ruby-mysql expects the socket to be at /tmp/mysql.sock
-  # but this image puts it in /var/run/mysqld/mysqld.sock
-  PERM_TEST_SQL_DB_SOCKET: /var/run/mysqld/mysqld.sock
   PERM_TEST_AUDIT_FILE_PATH: /var/log/perm-audit.log

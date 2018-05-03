@@ -13,7 +13,6 @@ run:
 inputs:
 - name: perm-rb
 - name: perm-ci
-- name: version
 
 params:
   RUBYGEMS_API_KEY:
