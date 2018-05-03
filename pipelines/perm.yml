@@ -1,27 +1,3 @@
-groups:
-- name: main
-  jobs:
-  - deploy-cf
-  - bump-submodule
-  - test-ruby-client
-  - run-errands
-  - test-cf
-  - deliver-stories
-  - test-migrator
-  - test-capi
-  - create-capi-alpha
-  - test-server
-  - bump-alpha
-  - create-alpha
-  - publish-ruby-client
-  - shipit
-- name: capi-prs
-  jobs:
-  - create-capi-alpha-pr
-  - deploy-cf-pr
-  - test-cf-pr
-  - test-capi-pr
-
 resource_types:
 - name: bosh-deployment
   type: docker-image
