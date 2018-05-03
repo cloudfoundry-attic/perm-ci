@@ -1,3 +1,27 @@
+groups:
+- name: main
+  jobs:
+  - deploy-cf
+  - bump-submodule
+  - test-ruby-client
+  - run-errands
+  - test-cf
+  - deliver-stories
+  - test-migrator
+  - test-capi
+  - create-capi-alpha
+  - test-server
+  - bump-alpha
+  - create-alpha
+  - publish-ruby-client
+  - shipit
+- name: capi-prs
+  jobs:
+  - create-capi-alpha-pr
+  - deploy-cf-pr
+  - test-cf-pr
+  - test-capi-pr
+
 resource_types:
 - name: bosh-deployment
   type: docker-image
@@ -17,94 +41,104 @@ resource_types:
     repository: ljfranklin/terraform-resource
 
 resources:
-- name: alpha
+- name: perm-version
   type: semver
   source:
     driver: s3
     endpoint: storage.googleapis.com
-    initial_version: 0.0.1
+    initial_version: 0.0.2
     bucket: perm-releases
-    key: alpha-version
+    key: perm-version
     access_key_id: ((gcp.access_key_id))
     secret_access_key: ((gcp.secret_access_key))
-- name: beta
-  type: semver
-  source:
-    driver: s3
-    endpoint: storage.googleapis.com
-    initial_version: 0.0.1
-    bucket: perm-releases
-    key: beta-version
-    access_key_id: ((gcp.access_key_id))
-    secret_access_key: ((gcp.secret_access_key))
-- name: binary-alpha
+    #- name: beta
+    #  type: semver
+    #  source:
+    #    driver: s3
+    #    endpoint: storage.googleapis.com
+    #    initial_version: 0.0.1
+    #    bucket: perm-releases
+    #    key: beta-version
+    #    access_key_id: ((gcp.access_key_id))
+    #    secret_access_key: ((gcp.secret_access_key))
+- name: perm-binary
   type: gcs
   source:
     bucket: perm-binaries
     regexp: perm-(\d+\.\d+\.\d+-alpha\.\d+).tgz
     json_key: ((gcp.json_key))
-- name: binary-beta
-  type: gcs
-  source:
-    bucket: perm-binaries
-    regexp: perm-(\d+\.\d+\.\d+-beta\.\d+).tgz
-    json_key: ((gcp.json_key))
+    #- name: binary-beta
+    #  type: gcs
+    #  source:
+    #    bucket: perm-binaries
+    #    regexp: perm-(\d+\.\d+\.\d+-beta\.\d+).tgz
+    #    json_key: ((gcp.json_key))
 - name: bosh-deployment
   type: git
   source:
     branch: master
     uri: git@github.com:cloudfoundry/bosh-deployment.git
     private_key: ((github.private_key))
+
 - name: broken-pool-repo
   type: git
   source:
     branch: master
     uri: ((broken_pool_repo_uri))
     private_key: ((github.private_key))
+
 - name: capi-ci
   type: git
   source:
     uri: git@github.com:cloudfoundry/capi-ci
     branch: master
     private_key: ((github.private_key))
+
 - name: capi-release-alpha
   type: gcs
   source:
     bucket: perm-alphas
     regexp: capi-release-(\d+)-for-perm-.*.tgz
     json_key: ((gcp.json_key))
+
 - name: capi-release-alpha-pr
   type: gcs
   source:
     bucket: perm-alphas
     regexp: capi-release-(\d+)-\w+-for-perm-.*.tgz
     json_key: ((gcp.json_key))
+
 - name: capi-release-develop
   type: git
   source:
     uri: git@github.com:cloudfoundry/capi-release
     branch: develop
     private_key: ((github.private_key))
+
 - name: cats-concourse-task
   type: git
   source:
     branch: master
     private_key: ((github.private_key))
     uri: git@github.com:cloudfoundry/cats-concourse-task.git
+
 - name: cf-acceptance-tests
   type: git
   source:
     branch: master
     private_key: ((github.private_key))
     uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
+
 - name: cf-deploy
   type: bosh-deployment
+
 - name: cf-deployment
   type: git
   source:
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: ((github.private_key))
     branch: release-candidate
+
 - name: cloud_controller_ng-perm-prs
   type: git-branch-heads
   source:
@@ -112,12 +146,14 @@ resources:
     branches:
     - perm/*
     private_key: ((github.private_key))
+
 - name: perm
   type: git
   source:
     uri: git@github.com:cloudfoundry-incubator/perm
     branch: master
     private_key: ((github.private_key))
+
 - name: perm-rb
   type: git
   source:
@@ -142,10 +178,10 @@ resources:
     bucket: perm-alphas
     regexp: perm-release-(.*).tgz
     json_key: ((gcp.json_key))
-- name: release-beta
+- name: final-release
   type: gcs
   source:
-    bucket: perm-releases
+    bucket: final-releases
     regexp: perm-release-(.*).tgz
     json_key: ((gcp.json_key))
 - name: terraform
@@ -206,17 +242,16 @@ jobs:
     - get: perm
       passed:
       - bump-submodule
-    - get: version
-      resource: alpha
+    - get: perm-version
       params:
         pre: alpha
   # Get perm-release after perm to avoid race conditions where the perm repo
   # gets pushed before perm-release during the `bump-submodule` job.
   - get: perm-release
     trigger: true
-  - put: alpha
+  - put: perm-version
     params:
-      file: version/version
+      file: perm-version/version
 
 - name: test-migrator
   plan:
@@ -228,10 +263,9 @@ jobs:
     - get: perm-release
       passed:
       - bump-alpha
-    - get: version
+    - get: perm-version
       passed:
       - bump-alpha
-      resource: alpha
       trigger: true
   - aggregate:
     - task: test-migrator
@@ -247,8 +281,7 @@ jobs:
     - get: perm-release
       passed:
       - test-migrator
-    - get: version
-      resource: alpha
+    - get: perm-version
       trigger: true
       passed:
       - test-migrator
@@ -256,6 +289,7 @@ jobs:
     - task: build-perm-binary
       file: perm-ci/tasks/build-binary/task.yml
       input_mapping:
+        version: perm-version
         release: perm-release
       output_mapping:
         bin-dir: perm-bin-dir
@@ -265,6 +299,7 @@ jobs:
     - task: create-release
       file: perm-ci/tasks/create-release/task.yml
       input_mapping:
+        version: perm-version
         release: perm-release
       params:
         RELEASE_NAME: perm
@@ -272,7 +307,7 @@ jobs:
   - put: release-alpha
     params:
       file: release-output/perm-*.tgz
-  - put: binary-alpha
+  - put: perm-binary
     params:
       file: perm-bin-dir/perm-*.tgz
 
@@ -283,7 +318,7 @@ jobs:
       passed:
       - create-alpha
     - get: perm-bin-dir
-      resource: binary-alpha
+      resource: perm-binary
       passed:
       - create-alpha
       trigger: true
@@ -319,18 +354,11 @@ jobs:
       resource: capi-release-develop
       trigger: true
     - get: perm-bin-dir
-      resource: binary-alpha
-      passed:
-      - create-alpha
-    - get: perm-ci
-    - get: release-alpha
-      passed:
-      - create-alpha
-    - get: version
-      resource: alpha
+      resource: perm-binary
       passed:
       - create-alpha
       trigger: true
+    - get: perm-ci
   - task: export-cloud_controller_ng
     file: perm-ci/tasks/export-subdirectory/task.yml
     input_mapping:
@@ -351,15 +379,14 @@ jobs:
       trigger: true
       version: every
     - get: perm-bin-dir
-      resource: binary-alpha
+      resource: perm-binary
       passed:
       - create-alpha
     - get: perm-ci
     - get: release-alpha
       passed:
       - create-alpha
-    - get: version
-      resource: alpha
+    - get: perm-version
       passed:
       - create-alpha
   - task: test-capi
@@ -381,14 +408,14 @@ jobs:
     - get: release-alpha
       passed:
       - create-alpha
-    - get: version
-      resource: alpha
+    - get: perm-version
       trigger: true
       passed:
       - create-alpha
   - task: create-capi-release
     file: perm-ci/tasks/create-capi-release/task.yml
     input_mapping:
+      version: perm-version
       release: capi-release
     params:
       RELEASE_NAME: capi
@@ -415,8 +442,7 @@ jobs:
     - get: release-alpha
       passed:
       - create-alpha
-    - get: version
-      resource: alpha
+    - get: perm-version
       passed:
       - create-alpha
   - aggregate:
@@ -467,11 +493,9 @@ jobs:
       passed:
       - create-capi-alpha
     - get: release-alpha
-      trigger: true
       passed:
       - create-capi-alpha
-    - get: version
-      resource: alpha
+    - get: perm-version
       trigger: true
       passed:
       - create-capi-alpha
@@ -602,8 +626,7 @@ jobs:
     - get: release-alpha
       passed:
       - create-capi-alpha-pr
-    - get: version
-      resource: alpha
+    - get: perm-version
       passed:
       - create-capi-alpha-pr
   - do: *deploy-cf
@@ -635,8 +658,7 @@ jobs:
       passed:
       - deploy-cf
       trigger: true
-    - get: version
-      resource: alpha
+    - get: perm-version
       passed:
       - deploy-cf
   - do: &run-errands
@@ -685,8 +707,7 @@ jobs:
       passed:
       - run-errands
       trigger: true
-    - get: version
-      resource: alpha
+    - get: perm-version
       passed:
       - run-errands
   - do: &test-cf
@@ -741,82 +762,44 @@ jobs:
       passed:
       - deploy-cf-pr
       trigger: true
-    - get: version
-      resource: alpha
+    - get: perm-version
       passed:
       - deploy-cf-pr
   - do: *test-cf
 
-- name: bump-beta
+- name: shipit
   plan:
   - aggregate:
-    - get: beta
-      params:
-        pre: beta
-    - get: capi-release
-      resource: capi-release-develop
-      passed:
-      - test-cf
-    - get: perm
-      passed:
-      - test-cf
-    - get: perm-release
-      passed:
-      - test-cf
-    - get: version
-      resource: alpha
-      trigger: true
-      passed:
-      - test-cf
-  - put: beta
-    params:
-      file: beta/version
-
-- name: create-beta
-  plan:
-  - aggregate:
-    - get: alpha
-      passed:
-      - bump-beta
-    - get: capi-release
-      resource: capi-release-develop
-      passed:
-      - bump-beta
-    - get: perm
-      passed:
-      - bump-beta
     - get: perm-ci
+    - get: perm-version
+      passed:
+      - test-cf
+      params:
+        bump: final
     - get: perm-release
       passed:
-      - bump-beta
-    - get: version
-      resource: beta
-      trigger: true
+      - test-cf
+    - get: release-alpha
       passed:
-      - bump-beta
-  - aggregate:
-    - task: build-perm-binary
-      file: perm-ci/tasks/build-binary/task.yml
-      input_mapping:
-        release: perm-release
-      output_mapping:
-        bin-dir: perm-bin-dir
-      params:
-        PACKAGE_PATH: code.cloudfoundry.org/perm/cmd/perm
-        BINARY_NAME: perm
-    - task: create-release
-      file: perm-ci/tasks/create-release/task.yml
-      input_mapping:
-        release: perm-release
-      params:
-        RELEASE_NAME: perm
-        TARBALL_NAME: perm-release
-  - put: release-beta
+      - test-cf
+  - task: finalize-release
+    file: perm-ci/tasks/finalize-release/task.yml
+    input_mapping:
+      release-repo: perm-release
+      release-tarball: release-alpha
+      version: perm-version
     params:
-      file: release-output/perm-*.tgz
-  - put: binary-beta
+      BOSH_PRIVATE_CONFIG: ((private_yml))
+  - put: perm-version
     params:
-      file: perm-bin-dir/perm-*.tgz
+      bump: patch
+  - put: perm-release
+    params:
+      repository: final-release-repo
+      merge: true
+  - put: final-release
+    params:
+      file: final-release-tarball/perm-release-*.tgz
 
 - name: deliver-stories
   plan:
@@ -839,8 +822,7 @@ jobs:
     - get: release-alpha
       passed:
       - test-cf
-    - get: version
-      resource: alpha
+    - get: perm-version
       trigger: true
       passed:
       - test-cf
