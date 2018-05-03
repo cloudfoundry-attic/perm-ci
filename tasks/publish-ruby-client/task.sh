@@ -2,8 +2,6 @@
 
 set -eu
 
-VERSION="$(cat version/version)"
-
 mkdir -p ${HOME}/.gem
 cat << EOF > ${HOME}/.gem/credentials
 ---

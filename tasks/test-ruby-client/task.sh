@@ -2,9 +2,7 @@
 
 set -eu
 
-VERSION="$(cat version/version)"
-
-tar -zxf "${PWD}/perm-bin-dir/perm-${VERSION}.tgz" -C /usr/local/bin
+tar -zxf "${PWD}/perm-bin-dir/perm-*.tgz" -C /usr/local/bin
 
 # From capi-ci:
 # HACK: change access time on mysql files to copy them into the writable layer

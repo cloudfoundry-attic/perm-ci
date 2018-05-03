@@ -286,6 +286,7 @@ jobs:
       resource: binary-alpha
       passed:
       - create-alpha
+      trigger: true
     - get: perm-ci
     - get: perm-rb
       trigger: true
@@ -295,11 +296,6 @@ jobs:
     - get: release-alpha
       passed:
       - create-alpha
-    - get: version
-      resource: alpha
-      passed:
-      - create-alpha
-      trigger: true
   - task: test-ruby-client
     file: perm-ci/tasks/test-ruby-client/task.yml
 
@@ -308,10 +304,6 @@ jobs:
   - aggregate:
     - get: perm-ci
     - get: perm-rb
-      passed:
-      - test-ruby-client
-    - get: version
-      resource: alpha
       passed:
       - test-ruby-client
   - task: publish-ruby-client
