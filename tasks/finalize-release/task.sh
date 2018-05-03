@@ -20,8 +20,8 @@ echo "$BOSH_PRIVATE_CONFIG" > "$FINAL_RELEASE_REPO/config/private.yml"
 
 cd "$FINAL_RELEASE_REPO"
 
-RELEASE_YML=$PWD/releases/concourse/concourse-${VERSION}.yml
-FINAL_RELEASE_TGZ=$FINAL_RELEASE_DIR/concourse-${VERSION}.tgz
+RELEASE_YML=$PWD/releases/perm/perm-${VERSION}.yml
+FINAL_RELEASE_TGZ=$FINAL_RELEASE_DIR/perm-${VERSION}.tgz
 
 # work-around Go BOSH CLI trying to rename blobs downloaded into ~/.root/tmp
 # into release dir, which is invalid cross-device link
