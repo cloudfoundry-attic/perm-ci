@@ -1,8 +1,6 @@
 #!/bin/bash
 
-VERSION="$(cat version/version)"
-
-tar -zxf "./perm-bin-dir/perm-${VERSION}.tgz" -C /usr/local/bin
+tar -zxf "./perm-bin-dir/"perm-*.tgz -C /usr/local/bin
 
 # Ensure that MySQL is definitely running since we currently only support MySQL,
 # and CAPI only starts MySQL if that's what the test run is using.
