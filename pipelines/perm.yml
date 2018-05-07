@@ -27,28 +27,12 @@ resources:
     key: perm-version
     access_key_id: ((gcp.access_key_id))
     secret_access_key: ((gcp.secret_access_key))
-    #- name: beta
-    #  type: semver
-    #  source:
-    #    driver: s3
-    #    endpoint: storage.googleapis.com
-    #    initial_version: 0.0.1
-    #    bucket: perm-releases
-    #    key: beta-version
-    #    access_key_id: ((gcp.access_key_id))
-    #    secret_access_key: ((gcp.secret_access_key))
 - name: perm-binary
   type: gcs
   source:
     bucket: perm-binaries
     regexp: perm-(\d+\.\d+\.\d+-alpha\.\d+).tgz
     json_key: ((gcp.json_key))
-    #- name: binary-beta
-    #  type: gcs
-    #  source:
-    #    bucket: perm-binaries
-    #    regexp: perm-(\d+\.\d+\.\d+-beta\.\d+).tgz
-    #    json_key: ((gcp.json_key))
 - name: bosh-deployment
   type: git
   source:
