@@ -132,6 +132,8 @@ resources:
     uri: git@github.com:cloudfoundry-incubator/perm-release
     branch: master
     private_key: ((github.private_key))
+    ignore_paths:
+    - releases
 - name: release-alpha
   type: gcs
   source:
@@ -141,7 +143,7 @@ resources:
 - name: final-release
   type: gcs
   source:
-    bucket: final-releases
+    bucket: perm-releases
     regexp: perm-release-(.*).tgz
     json_key: ((gcp.json_key))
 - name: terraform
@@ -750,16 +752,16 @@ jobs:
       version: perm-version
     params:
       BOSH_PRIVATE_CONFIG: ((private_yml))
-  - put: perm-release
-    params:
-      repository: final-release-repo
-      merge: true
   - put: final-release
     params:
       file: final-release-tarball/perm-release-*.tgz
   - put: perm-version
     params:
       bump: patch
+  - put: perm-release
+    params:
+      repository: final-release-repo
+      merge: true
 
 - name: deliver-stories
   plan:
