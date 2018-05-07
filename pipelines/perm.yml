@@ -132,8 +132,6 @@ resources:
     uri: git@github.com:cloudfoundry-incubator/perm-release
     branch: master
     private_key: ((github.private_key))
-    ignore_paths:
-    - releases
 - name: release-alpha
   type: gcs
   source:
