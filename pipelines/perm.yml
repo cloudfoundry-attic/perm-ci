@@ -750,9 +750,6 @@ jobs:
       version: perm-version
     params:
       BOSH_PRIVATE_CONFIG: ((private_yml))
-  - put: perm-version
-    params:
-      bump: patch
   - put: perm-release
     params:
       repository: final-release-repo
@@ -760,6 +757,9 @@ jobs:
   - put: final-release
     params:
       file: final-release-tarball/perm-release-*.tgz
+  - put: perm-version
+    params:
+      bump: patch
 
 - name: deliver-stories
   plan:
