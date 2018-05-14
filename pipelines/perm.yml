@@ -20,13 +20,12 @@ resources:
 - name: perm-version
   type: semver
   source:
-    driver: s3
+    driver: gcs
     endpoint: storage.googleapis.com
     initial_version: 0.0.2
     bucket: perm-releases
     key: perm-version
-    access_key_id: ((gcp.access_key_id))
-    secret_access_key: ((gcp.secret_access_key))
+    json_key: ((gcp.json_key))
 - name: perm-binary
   type: gcs
   source:
