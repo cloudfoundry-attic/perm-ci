@@ -28,6 +28,9 @@
             required: true
             ca_certs:
             - ((perm-mysql-tls.ca))
+        uaa:
+          hostname: uaa.((system_domain))
+          port: 443
 
 # Changes to other instance groups
 - type: replace
