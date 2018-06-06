@@ -6,4 +6,4 @@
     properties:
       perm:
         ca_certs:
-        - ((perm-tls.ca))
+        - ((perm_tls.ca))
