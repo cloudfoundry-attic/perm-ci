@@ -163,6 +163,14 @@ resources:
     paths:
     - images/perm/*
 
+- name: perm-certs
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry-incubator/perm-ci
+    private_key: ((github.com.private_key))
+    branch: master
+    paths:
+    - certs/*
 jobs:
 - name: build-perm-image-alpha
   plan:
