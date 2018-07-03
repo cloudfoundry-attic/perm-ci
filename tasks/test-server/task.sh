@@ -27,7 +27,7 @@ echo "########################"
 echo "# end go vet output"
 echo "########################"
 
-go install golang.org/x/tools/cmd/goimports
+go get golang.org/x/tools/cmd/goimports
 echo "########################"
 echo "# goimports output"
 echo "########################"
