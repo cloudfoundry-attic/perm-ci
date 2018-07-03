@@ -17,6 +17,14 @@ resource_types:
     repository: ljfranklin/terraform-resource
 
 resources:
+
+- name: morning
+  type: time
+  source:
+    start: 03:00 AM
+    stop:  04:00 AM
+    days: [ Monday Tuesday Wednesday Thursday Friday ]
+
 - name: perm-version
   type: semver
   source:
@@ -432,6 +440,8 @@ jobs:
 - name: deploy-cf
   plan:
   - aggregate:
+    - get: morning
+      trigger: true
     - get: bosh-deployment
     - get: broken-pool-repo
     - get: capi-ci
