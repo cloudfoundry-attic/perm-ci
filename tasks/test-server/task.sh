@@ -15,7 +15,7 @@ cd "${GOPATH}/src/code.cloudfoundry.org/perm"
 
 go fmt ./...
 
-DIRECTORIES="./cmd ./integration ./pkg ./protos ./test"
+DIRECTORIES="./cmd ./pkg ./protos ./test"
 
 echo "########################"
 echo "# go vet output"
