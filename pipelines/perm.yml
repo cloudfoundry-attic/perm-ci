@@ -104,7 +104,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: ((github.private_key))
-    branch: release-candidate
+    branch: release-candidate-perm
 
 - name: cloud_controller_ng-perm-prs
   type: git-branch-heads
