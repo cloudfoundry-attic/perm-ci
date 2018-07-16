@@ -6,11 +6,11 @@ image_resource:
     repository: concourse/buildroot
     tag: git
 inputs:
-- name: release-candidate-perm
-- name: release-candidate-cfd
+- name: cf-deployment-release-candidate
+- name: cf-deployment-perm
 - name: perm-ci
 outputs:
-- name: rebased-release-candidate-perm
+- name: rebased-cf-deployment-perm
 run:
   path: perm-ci/tasks/rebase-cfd/task.sh
 
