@@ -13,4 +13,3 @@ outputs:
 - name: rebased-cf-deployment-perm
 run:
   path: perm-ci/tasks/rebase-cfd/task.sh
-
