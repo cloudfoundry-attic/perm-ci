@@ -17,6 +17,12 @@ resource_types:
     repository: ljfranklin/terraform-resource
 
 resources:
+- name: cf-deployment-release-candidate
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/cf-deployment.git
+    private_key: ((github.private_key))
+    branch: release-candidate
 
 - name: morning
   type: time
@@ -167,6 +173,22 @@ resources:
     project_id: ((tracker.project_id))
 
 jobs:
+- name: rebase-cfd
+  plan:
+  - aggregate:
+    - get: perm-ci
+    - get: morning
+      trigger: true
+    - get: cf-deployment-release-candidate
+    - get: cf-deployment-perm
+      resource: cf-deployment
+  - task: rebase-cf-deployment
+    file: perm-ci/tasks/rebase-cfd/task.yml
+  - put: cf-deployment
+    params:
+      repository: rebased-cf-deployment-perm
+      rebase: true
+
 - name: test-server
   plan:
   - aggregate:
