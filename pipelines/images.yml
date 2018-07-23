@@ -12,43 +12,6 @@ resources:
     branch: master
     private_key: ((github.private_key))
 
-- name: bbl-cryptdo-image-src
-  type: git
-  source:
-    uri: git@github.com:cloudfoundry-incubator/perm-ci
-    private_key: ((github.private_key))
-    branch: master
-    paths:
-    - images/bbl-cryptdo/*
-
-- name: bbl-cryptdo-image
-  type: docker-image
-  source:
-    repository: cfperm/bbl-cryptdo
-    username: ((dockerhub.username))
-    password: ((dockerhub.password))
-
-- name: bbl-version
-  type: github-release
-  source:
-    owner: cloudfoundry
-    repository: bosh-bootloader
-    access_token: ((github.access_token))
-
-- name: bosh-cli-version
-  type: github-release
-  source:
-    owner: cloudfoundry
-    repository: bosh-cli
-    access_token: ((github.access_token))
-
-- name: cryptdo-version
-  type: github-release
-  source:
-    owner: xoebus
-    repository: cryptdo
-    access_token: ((github.access_token))
-
 - name: golang-image
   type: docker-image
   source:
@@ -163,14 +126,6 @@ resources:
     paths:
     - images/perm/*
 
-- name: perm-certs
-  type: git
-  source:
-    uri: git@github.com:cloudfoundry-incubator/perm-ci
-    private_key: ((github.com.private_key))
-    branch: master
-    paths:
-    - certs/*
 jobs:
 - name: build-perm-image-alpha
   plan:
@@ -245,44 +200,3 @@ jobs:
   - put: perm-requirements-image-mariadb
     params:
       build: perm-requirements-src-mariadb/images/perm-requirements/mariadb
-
-- name: build-bbl-cryptdo-image
-  plan:
-  - aggregate:
-    - get: bbl-cryptdo-image-src
-      trigger: true
-    - get: bbl-version
-      trigger: true
-    - get: bosh-cli-version
-      trigger: true
-    - get: cryptdo-version
-      trigger: true
-  - task: write-build-args-json
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: alpine
-          tag: 3.6
-      inputs:
-      - name: bbl-version
-      - name: bosh-cli-version
-      - name: cryptdo-version
-      outputs:
-      - name: build-args-dir
-      run:
-        path: sh
-        args:
-        - -c
-        - |
-          export BBL_VERSION="$(cat bbl-version/tag)" && \
-          export BOSH_CLI_VERSION="$(cat bosh-cli-version/tag | sed -e "s/v//")" && \
-          export CRYPTDO_VERSION="$(cat cryptdo-version/tag | sed -e "s/v//")" && \
-          mkdir -p build-args-dir && \
-          echo "{\"BBL_VERSION\":\"${BBL_VERSION}\",\"BOSH_CLI_VERSION\":\"${BOSH_CLI_VERSION}\",\"CRYPTDO_VERSION\":\"${CRYPTDO_VERSION}\"}" > \
-          build-args-dir/build-args.json
-  - put: bbl-cryptdo-image
-    params:
-      build: bbl-cryptdo-image-src/images/bbl-cryptdo
-      build_args_file: build-args-dir/build-args.json
