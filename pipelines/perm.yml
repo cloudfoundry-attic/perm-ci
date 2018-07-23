@@ -74,13 +74,6 @@ resources:
     regexp: capi-release-(\d+)-for-perm-.*.tgz
     json_key: ((gcp.json_key))
 
-- name: capi-release-alpha-pr
-  type: gcs
-  source:
-    bucket: perm-alphas
-    regexp: capi-release-(\d+)-\w+-for-perm-.*.tgz
-    json_key: ((gcp.json_key))
-
 - name: capi-release-develop
   type: git
   source:
@@ -111,14 +104,6 @@ resources:
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: ((github.private_key))
     branch: release-candidate-perm
-
-- name: cloud_controller_ng-perm-prs
-  type: git-branch-heads
-  source:
-    uri: git@github.com:cloudfoundry/cloud_controller_ng
-    branches:
-    - perm/*
-    private_key: ((github.private_key))
 
 - name: perm
   type: git
@@ -359,28 +344,6 @@ jobs:
   - task: test-capi
     file: perm-ci/tasks/test-capi/task.yml
 
-- name: test-capi-pr
-  plan:
-  - aggregate:
-    - get: capi-ci
-    - get: cloud_controller_ng
-      resource: cloud_controller_ng-perm-prs
-      trigger: true
-      version: every
-    - get: perm-bin-dir
-      resource: perm-binary
-      passed:
-      - create-alpha
-    - get: perm-ci
-    - get: release-alpha
-      passed:
-      - create-alpha
-    - get: perm-version
-      passed:
-      - create-alpha
-  - task: test-capi
-    file: perm-ci/tasks/test-capi/task.yml
-
 - name: create-capi-alpha
   plan:
   - aggregate:
@@ -409,53 +372,6 @@ jobs:
     params:
       RELEASE_NAME: capi
   - put: capi-release-alpha
-    params:
-      file: release-output/capi-release-*.tgz
-
-- name: create-capi-alpha-pr
-  plan:
-  - aggregate:
-    - get: capi-release
-      resource: capi-release-develop
-    - get: cloud_controller_ng
-      resource: cloud_controller_ng-perm-prs
-      trigger: true
-      version: every
-    - get: perm
-      passed:
-      - create-alpha
-    - get: perm-ci
-    - get: perm-release
-      passed:
-      - create-alpha
-    - get: release-alpha
-      passed:
-      - create-alpha
-    - get: perm-version
-      passed:
-      - create-alpha
-  - aggregate:
-    - task: bump-submodule
-      file: perm-ci/tasks/bump-submodule/task.yml
-      input_mapping:
-        parent-repo: capi-release
-        submodule-repo: cloud_controller_ng
-      output_mapping:
-        updated-parent-repo: updated-capi-release-dir
-      params:
-        SUBMODULE_PATH: src/cloud_controller_ng
-        SUBMODULE_NAME: cloud_controller_ng
-    - task: get-branch-name
-      file: perm-ci/tasks/get-branch-name/task.yml
-      input_mapping:
-        repo: cloud_controller_ng
-  - task: create-capi-pr-release
-    file: perm-ci/tasks/create-capi-pr-release/task.yml
-    input_mapping:
-      release-dir: updated-capi-release-dir
-    params:
-      RELEASE_NAME: capi
-  - put: capi-release-alpha-pr
     params:
       file: release-output/capi-release-*.tgz
 
@@ -586,41 +502,6 @@ jobs:
               rebase: true
           on_failure: *cf-deploy-failure
 
-- name: deploy-cf-pr
-  plan:
-  - aggregate:
-    - get: bosh-deployment
-    - get: broken-pool-repo
-    - get: capi-ci
-    - get: capi-release
-      resource: capi-release-develop
-      passed:
-      - create-capi-alpha-pr
-    - get: capi-release-alpha
-      resource: capi-release-alpha-pr
-      trigger: true
-      passed:
-      - create-capi-alpha-pr
-    - get: cf-deployment
-    - get: cloud_controller_ng
-      resource: cloud_controller_ng-perm-prs
-      passed:
-      - create-capi-alpha-pr
-    - get: perm
-      passed:
-      - create-capi-alpha-pr
-    - get: perm-ci
-    - get: perm-release
-      passed:
-      - create-capi-alpha-pr
-    - get: release-alpha
-      passed:
-      - create-capi-alpha-pr
-    - get: perm-version
-      passed:
-      - create-capi-alpha-pr
-  - do: *deploy-cf
-
 - name: run-errands
   plan:
   - aggregate:
@@ -718,44 +599,6 @@ jobs:
         NODES: 4
       ensure:
         do: *pend-broken-environment
-
-- name: test-cf-pr
-  plan:
-  - aggregate:
-    - get: broken-pool-repo
-    - get: capi-ci
-    - get: capi-release
-      resource: capi-release-develop
-      passed:
-      - deploy-cf-pr
-    - get: capi-release-alpha-pr
-      trigger: true
-      passed:
-      - deploy-cf-pr
-    - get: cats-concourse-task
-    - get: cf-acceptance-tests
-    - get: cloud_controller_ng
-      resource: cloud_controller_ng-perm-prs
-      passed:
-      - deploy-cf-pr
-    - get: perm
-      passed:
-      - deploy-cf-pr
-    - get: perm-ci
-    - get: perm-release
-      passed:
-      - deploy-cf-pr
-    - get: release-alpha
-      passed:
-      - deploy-cf-pr
-    - get: terraform
-      passed:
-      - deploy-cf-pr
-      trigger: true
-    - get: perm-version
-      passed:
-      - deploy-cf-pr
-  - do: *test-cf
 
 - name: shipit
   plan:
