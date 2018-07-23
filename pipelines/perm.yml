@@ -67,13 +67,6 @@ resources:
     branch: master
     private_key: ((github.private_key))
 
-- name: capi-release-alpha
-  type: gcs
-  source:
-    bucket: perm-alphas
-    regexp: capi-release-(\d+)-for-perm-.*.tgz
-    json_key: ((gcp.json_key))
-
 - name: capi-release-develop
   type: git
   source:
@@ -344,37 +337,6 @@ jobs:
   - task: test-capi
     file: perm-ci/tasks/test-capi/task.yml
 
-- name: create-capi-alpha
-  plan:
-  - aggregate:
-    - get: capi-release
-      trigger: true
-      resource: capi-release-develop
-    - get: perm
-      passed:
-      - create-alpha
-    - get: perm-ci
-    - get: perm-release
-      passed:
-      - create-alpha
-    - get: release-alpha
-      passed:
-      - create-alpha
-    - get: perm-version
-      trigger: true
-      passed:
-      - create-alpha
-  - task: create-capi-release
-    file: perm-ci/tasks/create-capi-release/task.yml
-    input_mapping:
-      version: perm-version
-      release: capi-release
-    params:
-      RELEASE_NAME: capi
-  - put: capi-release-alpha
-    params:
-      file: release-output/capi-release-*.tgz
-
 - name: deploy-cf
   plan:
   - aggregate:
@@ -383,29 +345,23 @@ jobs:
     - get: bosh-deployment
     - get: broken-pool-repo
     - get: capi-ci
-    - get: capi-release-alpha
-      trigger: true
-      passed:
-      - create-capi-alpha
     - get: capi-release
       resource: capi-release-develop
-      passed:
-      - create-capi-alpha
     - get: cf-deployment
     - get: perm
       passed:
-      - create-capi-alpha
+      - create-alpha
     - get: perm-ci
     - get: perm-release
       passed:
-      - create-capi-alpha
+      - create-alpha
     - get: release-alpha
       passed:
-      - create-capi-alpha
+      - create-alpha
     - get: perm-version
       trigger: true
       passed:
-      - create-capi-alpha
+      - create-alpha
   - do: &deploy-cf
     - put: terraform
       params:
