@@ -67,12 +67,11 @@ resources:
     branch: master
     private_key: ((github.private_key))
 
-- name: capi-release-develop
-  type: git
+- name: capi-release-alpha
+  type: s3
   source:
-    uri: git@github.com:cloudfoundry/capi-release
-    branch: develop
-    private_key: ((github.private_key))
+    bucket: capi-releases
+    regexp: capi-(.*)-.*-.*.tgz
 
 - name: cats-concourse-task
   type: git
@@ -97,6 +96,13 @@ resources:
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: ((github.private_key))
     branch: release-candidate-perm
+
+- name: cloud_controller_ng
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/cloud_controller_ng.git
+    private_key: ((github.private_key))
+    branch: master
 
 - name: perm
   type: git
@@ -317,8 +323,7 @@ jobs:
   plan:
   - aggregate:
     - get: capi-ci
-    - get: capi-release
-      resource: capi-release-develop
+    - get: cloud_controller_ng
       trigger: true
     - get: perm-bin-dir
       resource: perm-binary
@@ -326,14 +331,6 @@ jobs:
       - create-alpha
       trigger: true
     - get: perm-ci
-  - task: export-cloud_controller_ng
-    file: perm-ci/tasks/export-subdirectory/task.yml
-    input_mapping:
-      parent: capi-release
-    output_mapping:
-      subdirectory: cloud_controller_ng
-    params:
-      SUBDIRECTORY_PATH: src/cloud_controller_ng
   - task: test-capi
     file: perm-ci/tasks/test-capi/task.yml
 
@@ -346,7 +343,7 @@ jobs:
     - get: broken-pool-repo
     - get: capi-ci
     - get: capi-release
-      resource: capi-release-develop
+      resource: capi-release-alpha
     - get: cf-deployment
     - get: perm
       passed:
@@ -426,7 +423,7 @@ jobs:
           manifest: cf-deployment/cf-deployment.yml
           releases:
           - release-alpha/*.tgz
-          - capi-release-alpha/*.tgz
+          - capi-release/*.tgz
           vars_files:
           - bosh-target/vars.yml
           ops_files:
@@ -464,10 +461,7 @@ jobs:
     - get: broken-pool-repo
     - get: capi-ci
     - get: capi-release
-      resource: capi-release-develop
-      passed:
-      - deploy-cf
-    - get: capi-release-alpha
+      resource: capi-release-alpha
       passed:
       - deploy-cf
     - get: perm
@@ -510,10 +504,7 @@ jobs:
     - get: broken-pool-repo
     - get: capi-ci
     - get: capi-release
-      resource: capi-release-develop
-      passed:
-      - run-errands
-    - get: capi-release-alpha
+      resource: capi-release-alpha
       trigger: true
       passed:
       - run-errands
@@ -524,7 +515,6 @@ jobs:
       - run-errands
     - get: perm-ci
     - get: perm-release
-      trigger: true
       passed:
       - run-errands
     - get: release-alpha
@@ -537,6 +527,7 @@ jobs:
     - get: perm-version
       passed:
       - run-errands
+      trigger: true
   - do: &test-cf
     - task: download-from-gcs
       file: capi-ci/ci/gcs/download-from-gcs.yml
@@ -593,11 +584,6 @@ jobs:
 - name: deliver-stories
   plan:
   - aggregate:
-    - get: capi-release
-      resource: capi-release-develop
-      passed:
-      - test-cf
-      - test-capi
     - get: perm
       passed:
       - test-cf
@@ -618,8 +604,6 @@ jobs:
   - put: tracker
     params:
       repos:
-      - capi-release
-      - perm-release/src/cloud_controller_ng
       - perm
       - perm-rb
       - perm-release
