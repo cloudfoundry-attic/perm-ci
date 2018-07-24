@@ -67,7 +67,7 @@ resources:
     branch: master
     private_key: ((github.private_key))
 
-- name: capi-release-alpha
+- name: capi-release-develop
   type: s3
   source:
     bucket: capi-releases
@@ -343,7 +343,7 @@ jobs:
     - get: broken-pool-repo
     - get: capi-ci
     - get: capi-release
-      resource: capi-release-alpha
+      resource: capi-release-develop
     - get: cf-deployment
     - get: perm
       passed:
@@ -461,7 +461,7 @@ jobs:
     - get: broken-pool-repo
     - get: capi-ci
     - get: capi-release
-      resource: capi-release-alpha
+      resource: capi-release-develop
       passed:
       - deploy-cf
     - get: perm
@@ -504,7 +504,7 @@ jobs:
     - get: broken-pool-repo
     - get: capi-ci
     - get: capi-release
-      resource: capi-release-alpha
+      resource: capi-release-develop
       trigger: true
       passed:
       - run-errands
