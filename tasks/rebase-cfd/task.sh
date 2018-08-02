@@ -7,7 +7,7 @@ git config --global user.name "CI Bot"
 
 cd cf-deployment-perm
 
-git remote add -f local-release-candidate ../cf-deployment-release-candidate
-git checkout release-candidate-perm
-git rebase local-release-candidate/release-candidate
+git remote add -f local-develop ../cf-deployment-develop
+git checkout perm-develop
+git rebase local-develop/develop
 cp -a . ../rebased-cf-deployment-perm

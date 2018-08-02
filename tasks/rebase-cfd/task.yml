@@ -6,7 +6,7 @@ image_resource:
     repository: concourse/buildroot
     tag: git
 inputs:
-- name: cf-deployment-release-candidate
+- name: cf-deployment-develop
 - name: cf-deployment-perm
 - name: perm-ci
 outputs:

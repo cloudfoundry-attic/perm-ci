@@ -17,12 +17,12 @@ resource_types:
     repository: ljfranklin/terraform-resource
 
 resources:
-- name: cf-deployment-release-candidate
+- name: cf-deployment-develop
   type: git
   source:
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: ((github.private_key))
-    branch: release-candidate
+    branch: develop
 
 - name: morning
   type: time
@@ -95,7 +95,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: ((github.private_key))
-    branch: release-candidate-perm
+    branch: perm-develop
 
 - name: cloud_controller_ng
   type: git
@@ -163,7 +163,7 @@ jobs:
     - get: perm-ci
     - get: morning
       trigger: true
-    - get: cf-deployment-release-candidate
+    - get: cf-deployment-develop
     - get: cf-deployment-perm
       resource: cf-deployment
   - task: rebase-cf-deployment
