@@ -184,6 +184,8 @@ jobs:
       file: perm-ci/tasks/test-server/task-mysql.yml
     - task: test-server-mariadb
       file: perm-ci/tasks/test-server/task-mariadb.yml
+    - task: test-server-percona
+      file: perm-ci/tasks/test-server/task-percona.yml
 
 - name: bump-submodule
   plan:

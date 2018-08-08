@@ -1,0 +1,16 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: cfperm/requirements
+    tag: percona
+
+inputs:
+- name: perm-ci
+- name: perm
+  path: gopath/src/code.cloudfoundry.org/perm
+
+run:
+  path: perm-ci/tasks/test-server/task.sh
