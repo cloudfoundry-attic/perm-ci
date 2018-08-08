@@ -70,6 +70,23 @@ resources:
     username: ((dockerhub.username))
     password: ((dockerhub.password))
 
+- name: perm-requirements-src-percona
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry-incubator/perm-ci
+    private_key: ((github.private_key))
+    branch: master
+    paths:
+    - images/perm-requirements/percona/*
+
+- name: perm-requirements-image-percona
+  type: docker-image
+  source:
+    repository: cfperm/requirements
+    tag: percona
+    username: ((dockerhub.username))
+    password: ((dockerhub.password))
+
 - name: perm-requirements-src-mariadb
   type: git
   source:
@@ -187,6 +204,19 @@ jobs:
   - put: perm-requirements-image-mysql
     params:
       build: perm-requirements-src-mysql/images/perm-requirements/mysql
+
+- name: build-perm-percona-image
+  plan:
+  - aggregate:
+    - get: perm-requirements-src-base
+      passed:
+      - build-perm-image-base
+      trigger: true
+    - get: perm-requirements-src-percona
+      trigger: true
+  - put: perm-requirements-image-percona
+    params:
+      build: perm-requirements-src-percona/images/perm-requirements/percona
 
 - name: build-perm-mariadb-image
   plan:
