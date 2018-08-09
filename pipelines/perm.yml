@@ -346,6 +346,7 @@ jobs:
     - get: capi-ci
     - get: capi-release
       resource: capi-release-develop
+      trigger: true
     - get: cf-deployment
     - get: perm
       passed:
