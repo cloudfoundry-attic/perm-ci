@@ -3,23 +3,21 @@ MAINTAINER https://github.com/cloudfoundry/capi-dockerfiles
 
 RUN gem install bundler
 
-RUN set -ex; \
+RUN set -eu; \
 # gpg: key 5072E1F5: public key "MySQL Release Engineering <mysql-build@oss.oracle.com>" imported
-	key='A4A9406876FCBD3C456770C88C718D3B5072E1F5'; \
-	export GNUPGHOME="$(mktemp -d)"; \
+	key="A4A9406876FCBD3C456770C88C718D3B5072E1F5"; \
 	gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
 	gpg --export "$key" > /etc/apt/trusted.gpg.d/mysql.gpg; \
-	rm -r "$GNUPGHOME"; \
 	apt-key list > /dev/null
 
 ENV MYSQL_MAJOR 5.7
-ENV MYSQL_VERSION 5.7.20-1debian8
+ENV MYSQL_VERSION 5.7.23-1debian9
 
-RUN echo "deb http://repo.mysql.com/apt/debian/ jessie mysql-${MYSQL_MAJOR}" > /etc/apt/sources.list.d/mysql.list
+RUN echo "deb http://repo.mysql.com/apt/debian/ stretch mysql-${MYSQL_MAJOR}" > /etc/apt/sources.list.d/mysql.list
 
-RUN set -ex \
-    && echo 'mysql-server mysql-server/root_password password password' | debconf-set-selections \
-    && echo 'mysql-server mysql-server/root_password_again password password' | debconf-set-selections \
+RUN set -eu \
+    && echo "mysql-server mysql-server/root_password password password" | debconf-set-selections \
+    && echo "mysql-server mysql-server/root_password_again password password" | debconf-set-selections \
     && echo "mysql-community-server	mysql-community-server/root-pass	password password" | debconf-set-selections \
     && echo "mysql-community-server	mysql-community-server/re-root-pass	password password" | debconf-set-selections \
     && echo "mysql-community-server	mysql-community-server/data-dir	note" | debconf-set-selections \
@@ -60,8 +58,8 @@ RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - && \
 ENV GOPATH $HOME/go
 ENV PATH $HOME/go/bin:/usr/local/go/bin:$PATH
 RUN \
-  wget https://storage.googleapis.com/golang/go1.6.2.linux-amd64.tar.gz -P /tmp && \
-  tar xzvf /tmp/go1.6.2.linux-amd64.tar.gz -C /usr/local && \
+  wget https://dl.google.com/go/go1.10.3.linux-amd64.tar.gz -P /tmp && \
+  tar xzvf /tmp/go1.10.3.linux-amd64.tar.gz -C /usr/local && \
   mkdir $GOPATH && \
   rm -rf /tmp/*
 
