@@ -29,6 +29,7 @@ resources:
   source:
     start: 03:00
     stop:  04:00
+    location: America/Los_Angeles
     days: [ Monday, Tuesday, Wednesday, Thursday, Friday ]
 
 - name: perm-version
