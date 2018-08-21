@@ -20,7 +20,7 @@ RUN \
     dirmngr && \
   apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74CD1D8 && \
   add-apt-repository \
-    'deb [arch=amd64,i386,ppc64el] http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.1/debian stretch main' && \
+    'deb [arch=amd64,i386,ppc64el] http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.2/debian stretch main' && \
   apt-get update -qq && \
   apt-get install -yqq --no-install-recommends \
     mariadb-server && \
