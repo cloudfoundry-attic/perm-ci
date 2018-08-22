@@ -162,9 +162,8 @@ jobs:
   plan:
   - aggregate:
     - get: perm-ci
-    - get: morning
-      trigger: true
     - get: cf-deployment-develop
+      trigger: true
     - get: cf-deployment-perm
       resource: cf-deployment
   - task: rebase-cf-deployment
