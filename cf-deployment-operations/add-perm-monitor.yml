@@ -1,0 +1,27 @@
+- type: replace
+  path: /instance_groups/-
+  value:
+    name: perm-monitor
+    instances: 1
+    azs:
+    - z1
+    vm_type: minimal
+    stemcell: default
+    networks:
+    - name: default
+    jobs:
+    - name: perm-monitor
+      release: perm
+      properties:
+        perm:
+          ca_certs:
+          - ((perm_tls.ca))
+    - name: statsd_injector
+      release: statsd-injector
+      properties:
+        loggregator:
+          tls:
+            ca_cert: "((loggregator_ca.certificate))"
+            statsd_injector:
+              cert: "((loggregator_tls_statsdinjector.certificate))"
+              key: "((loggregator_tls_statsdinjector.private_key))"
