@@ -17,6 +17,13 @@ resource_types:
     repository: ljfranklin/terraform-resource
 
 resources:
+# temporary: for us to experiment with tcp route creation via route registrar
+- name: routing-release-tcp
+  type: git
+  source:
+    uri: git@github.com:nickwei84/routing-release.git
+    branch: tcp-route-registration
+
 - name: cf-deployment-develop
   type: git
   source:
@@ -362,6 +369,7 @@ jobs:
       trigger: true
       passed:
       - create-alpha
+    - get: routing-release-tcp
   - do: &deploy-cf
     - put: terraform
       params:
@@ -408,6 +416,14 @@ jobs:
             GCP_BUCKET: ((terraform.bucket))
             GCP_PATH: director-state
             USE_ENV_NAMED_SUBDIR: true
+        - task: create-release
+          file: perm-ci/tasks/create-release/task.yml
+          input_mapping:
+            version: perm-version
+            release: routing-release-tcp
+          params:
+            RELEASE_NAME: routing
+            TARBALL_NAME: routing-release
         on_failure: &cf-deploy-failure
           do:
           - task: delete-bosh-lite
@@ -427,6 +443,7 @@ jobs:
           releases:
           - release-alpha/*.tgz
           - capi-release/*.tgz
+          - release-output/routing-release*.tgz
           vars_files:
           - bosh-target/vars.yml
           ops_files:
@@ -441,6 +458,7 @@ jobs:
           - cf-deployment/operations/experimental/perm-service-with-pxc-release.yml
           - perm-ci/cf-deployment-operations/make-perm-ha.yml
           - perm-ci/cf-deployment-operations/add-perm-monitor.yml
+          - perm-ci/cf-deployment-operations/perm-service-with-tcp-routing.yml
           - capi-ci/cf-deployment-operations/use-latest-capi.yml
         on_failure:
           do: &pend-broken-environment
