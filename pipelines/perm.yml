@@ -22,6 +22,7 @@ resources:
   type: git
   source:
     uri: git@github.com:nickwei84/routing-release.git
+    private_key: ((github.private_key))
     branch: tcp-route-registration
 
 - name: cf-deployment-develop
