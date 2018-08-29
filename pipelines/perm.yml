@@ -462,6 +462,7 @@ jobs:
           - cf-deployment/operations/experimental/perm-service-with-pxc-release.yml
           - perm-ci/cf-deployment-operations/make-perm-ha.yml
           - perm-ci/cf-deployment-operations/add-perm-monitor.yml
+          - perm-ci/cf-deployment-operations/use-latest-routing-release.yml
           - capi-ci/cf-deployment-operations/use-latest-capi.yml
         on_failure:
           do: &pend-broken-environment
