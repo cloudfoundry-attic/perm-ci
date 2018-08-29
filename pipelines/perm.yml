@@ -419,7 +419,7 @@ jobs:
             GCP_BUCKET: ((terraform.bucket))
             GCP_PATH: director-state
             USE_ENV_NAMED_SUBDIR: true
-        - task: create-release
+        - task: create-routing-release
           file: perm-ci/tasks/create-release/task.yml
           input_mapping:
             version: perm-version
@@ -457,11 +457,11 @@ jobs:
           - cf-deployment/operations/bosh-lite.yml
           - cf-deployment/operations/experimental/disable-consul-bosh-lite.yml
           - cf-deployment/operations/experimental/perm-service.yml
+          - cf-deployment/operations/experimental/perm-service-with-tcp-routing.yml
           - cf-deployment/operations/experimental/use-pxc.yml
           - cf-deployment/operations/experimental/perm-service-with-pxc-release.yml
           - perm-ci/cf-deployment-operations/make-perm-ha.yml
           - perm-ci/cf-deployment-operations/add-perm-monitor.yml
-          - perm-ci/cf-deployment-operations/perm-service-with-tcp-routing.yml
           - capi-ci/cf-deployment-operations/use-latest-capi.yml
         on_failure:
           do: &pend-broken-environment
