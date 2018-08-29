@@ -405,6 +405,8 @@ jobs:
           file: capi-ci/ci/bosh-lite/create-env-vars-file.yml
         - task: upload-cf-assets
           file: capi-ci/ci/bosh-lite/upload-cf-assets.yml
+        - task: update-cloud-config
+          file: perm-ci/tasks/update-cloud-config/task.yml
         - task: write-bosh-target-file
           file: capi-ci/ci/bosh-lite/write-bosh-target-file.yml
         - task: upload-to-gcs

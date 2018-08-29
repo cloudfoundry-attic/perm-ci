@@ -1,0 +1,19 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: cloudfoundry/capi
+    tag: bosh-lite
+
+inputs:
+  - name: perm-ci
+  - name: cf-deployment
+  - name: bosh-lite-env-info
+
+params:
+  TCP_PORT: 3333
+
+run:
+  path: perm-ci/tasks/update-cloud-config/task.sh
