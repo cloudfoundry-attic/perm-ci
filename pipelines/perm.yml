@@ -21,7 +21,7 @@ resources:
 - name: routing-release-tcp
   type: git
   source:
-    uri: git@github.com:nickwei84/routing-release.git
+    uri: git@github.com:n4wei/routing-release.git
     private_key: ((github.private_key))
     branch: tcp-route-registration
 
