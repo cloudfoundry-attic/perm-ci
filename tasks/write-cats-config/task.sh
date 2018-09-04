@@ -38,6 +38,7 @@ function store_config() {
   "backend": "diego",
   "skip_ssl_validation": true,
   "use_http": false,
+  "use_log_cache": false,
   "include_apps": true,
   "include_backend_compatibility": false,
   "include_capi_experimental": false,
