@@ -98,6 +98,8 @@ resources:
 
 - name: cf-deploy
   type: bosh-deployment
+  source:
+    skip_check: true
 
 - name: cf-deployment
   type: git
