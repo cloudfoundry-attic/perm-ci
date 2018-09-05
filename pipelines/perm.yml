@@ -462,6 +462,7 @@ jobs:
           - cf-deployment/operations/experimental/perm-service-with-tcp-routing.yml
           - cf-deployment/operations/experimental/use-pxc.yml
           - cf-deployment/operations/experimental/perm-service-with-pxc-release.yml
+          - cf-deployment/operations/experimental/enable-backup-restore-perm.yml
           - perm-ci/cf-deployment-operations/make-perm-ha.yml
           - perm-ci/cf-deployment-operations/add-perm-monitor.yml
           - perm-ci/cf-deployment-operations/use-latest-routing-release.yml
