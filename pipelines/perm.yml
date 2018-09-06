@@ -101,7 +101,7 @@ resources:
   source:
     skip_check: true
 
-- name: cf-deployment
+- name: cf-deployment-perm-develop
   type: git
   source:
     uri: git@github.com:cloudfoundry/cf-deployment.git
@@ -172,10 +172,11 @@ jobs:
   plan:
   - get: cf-deployment-develop
     trigger: true
-  - put: cf-deployment
+  - put: cf-deployment-perm-develop
     params:
-      repository: rebased-cf-deployment-perm
+      force: true
       rebase: true
+      repository: cf-deployment-develop
 
 - name: test-server
   plan:
@@ -352,6 +353,7 @@ jobs:
       resource: capi-release-develop
       trigger: true
     - get: cf-deployment
+      resource: cf-deployment-perm-develop
     - get: perm
       passed:
       - create-alpha
