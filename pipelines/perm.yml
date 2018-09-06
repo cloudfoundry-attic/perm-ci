@@ -185,6 +185,24 @@ jobs:
       trigger: true
     - get: perm-ci
   - aggregate:
+    - task: lint-code
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: cfperm/gometalinter
+        inputs:
+        - name: perm
+          path: go/src/code.cloudfoundry.org/perm
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            export GOPATH=${PWD}/go
+            cd go/src/code.cloudfoundry.org/perm
+            gometalinter --deadline 5m --disable-all --tests --vendor --enable vet --enable vetshadow --enable goimports ./...
     - task: test-server-mysql
       file: perm-ci/tasks/test-server/task-mysql.yml
     - task: test-server-mariadb
