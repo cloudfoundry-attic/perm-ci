@@ -202,7 +202,7 @@ jobs:
           - |
             export GOPATH=${PWD}/go
             cd go/src/code.cloudfoundry.org/perm
-            gometalinter --deadline 5m --disable-all --tests --vendor --enable vet --enable vetshadow --enable goimports ./...
+            gometalinter --deadline 5m --disable-all --tests --vendor --enable vet --enable vetshadow --enable goimports --enable gofmt ./...
     - task: test-server-mysql
       file: perm-ci/tasks/test-server/task-mysql.yml
     - task: test-server-mariadb
