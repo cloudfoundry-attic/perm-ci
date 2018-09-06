@@ -143,6 +143,22 @@ resources:
     paths:
     - images/perm/*
 
+- name: gometalinter-image-src
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry-incubator/perm-ci
+    private_key: ((github.private_key))
+    branch: master
+    paths:
+    - images/gometalinter/*
+
+- name: gometalinter-image
+  type: docker-image
+  source:
+    repository: cfperm/gometalinter
+    username: ((dockerhub.username))
+    password: ((dockerhub.password))
+
 jobs:
 - name: build-perm-image-alpha
   plan:
@@ -230,3 +246,14 @@ jobs:
   - put: perm-requirements-image-mariadb
     params:
       build: perm-requirements-src-mariadb/images/perm-requirements/mariadb
+
+- name: build-gometalinter-image
+  plan:
+  - aggregate:
+    - get: golang-image
+      trigger: true
+    - get: gometalinter-image-src
+      trigger: true
+  - put: gometalinter-image
+    params:
+      build: gometalinter-image-src/images/gometalinter
