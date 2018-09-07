@@ -2,7 +2,7 @@
 
 set -eu
 
-CONCOURSE_TARGET=ci
+CONCOURSE_TARGET=wings
 CREDENTIALS_NOTE_NAME="Perm Pipeline Credentials"
 CRYPTDO_PASSWORD_NAME="Perm CI Cryptdo Password"
 
